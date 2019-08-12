@@ -1,0 +1,33 @@
+image: maven:3.6.1-jdk-8
+
+variables:
+  MAVEN_OPTS: '-Xms64m -Xmx256m -Dmaven.repo.local=.mvn/repository'
+  MAVEN_GOALS: 'clean verify'
+
+cache:
+  key: ${CI_PROJECT_PATH_SLUG}
+  paths:
+    - .mvn/repository
+
+stages:
+  - build
+  - test
+
+build:
+  stage: build
+  script:
+    - mvn ${MAVEN_GOALS} -DskipTests
+  artifacts:
+    paths:
+      - target
+    expire_in: 1h
+
+test:
+  stage: test
+  dependencies:
+    - build
+  script:
+    - mvn test
+  artifacts:
+    reports:
+      junit: target/surefire-reports/*.xml
