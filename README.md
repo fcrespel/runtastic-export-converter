@@ -1,3 +1,6 @@
+[![Pipeline Status](https://gitlab.com/fcrespel/runtastic-export-converter/badges/master/pipeline.svg)](https://gitlab.com/fcrespel/runtastic-export-converter/pipelines)
+[![License](https://img.shields.io/github/license/fcrespel/runtastic-export-converter.svg)](https://opensource.org/licenses/MIT)
+
 # Runtastic Export Converter
 
 This project provides a command-line tool to convert Runtastic JSON exported data to standard GPX/TCX files.
