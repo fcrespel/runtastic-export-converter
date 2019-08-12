@@ -49,14 +49,19 @@ public class TcxSportSessionMapper implements SportSessionMapper<TrainingCenterD
 	}
 
 	@Override
-	public TrainingCenterDatabaseT mapSportSession(SportSession session) {
+	public boolean supports(String format) {
+		return format != null && format.toLowerCase().endsWith("tcx");
+	}
+
+	@Override
+	public TrainingCenterDatabaseT mapSportSession(SportSession session, String format) {
 		List<TrackpointT> trackpoints = new ArrayList<>();
 		trackpoints.addAll(mapGpsData(session.getGpsData()));
 		trackpoints.addAll(mapHeartRateData(session.getHeartRateData()));
-		TrackT track = new TrackT();
+		TrackT track = factory.createTrackT();
 		track.getTrackpoint().addAll(mergeTrackpoints(trackpoints));
 
-		ActivityLapT lap = new ActivityLapT();
+		ActivityLapT lap = factory.createActivityLapT();
 		lap.setStartTime(mapDate(session.getStartTime()));
 		lap.setTotalTimeSeconds(session.getDuration());
 		lap.setDistanceMeters(session.getDistance());
@@ -67,22 +72,22 @@ public class TcxSportSessionMapper implements SportSessionMapper<TrainingCenterD
 		lap.setTriggerMethod(TriggerMethodT.MANUAL);
 		lap.getTrack().add(track);
 
-		ActivityT activity = new ActivityT();
+		ActivityT activity = factory.createActivityT();
 		activity.setSport(mapSport(session.getSportTypeId()));
 		activity.setId(mapDate(session.getStartTime()));
 		activity.getLap().add(lap);
 
-		ActivityListT activities = new ActivityListT();
+		ActivityListT activities = factory.createActivityListT();
 		activities.getActivity().add(activity);
 
-		TrainingCenterDatabaseT tcx = new TrainingCenterDatabaseT();
+		TrainingCenterDatabaseT tcx = factory.createTrainingCenterDatabaseT();
 		tcx.setActivities(activities);
 		return tcx;
 	}
 
 	@Override
-	public TrainingCenterDatabaseT mapSportSession(SportSession session, File dest) {
-		TrainingCenterDatabaseT tcx = mapSportSession(session);
+	public TrainingCenterDatabaseT mapSportSession(SportSession session, String format, File dest) {
+		TrainingCenterDatabaseT tcx = mapSportSession(session, format);
 		try {
 			JAXBContext ctx = JAXBContext.newInstance(TrainingCenterDatabaseT.class);
 			Marshaller m = ctx.createMarshaller();
@@ -95,8 +100,8 @@ public class TcxSportSessionMapper implements SportSessionMapper<TrainingCenterD
 	}
 
 	@Override
-	public TrainingCenterDatabaseT mapSportSession(SportSession session, OutputStream dest) {
-		TrainingCenterDatabaseT tcx = mapSportSession(session);
+	public TrainingCenterDatabaseT mapSportSession(SportSession session, String format, OutputStream dest) {
+		TrainingCenterDatabaseT tcx = mapSportSession(session, format);
 		try {
 			JAXBContext ctx = JAXBContext.newInstance(TrainingCenterDatabaseT.class);
 			Marshaller m = ctx.createMarshaller();
@@ -119,7 +124,7 @@ public class TcxSportSessionMapper implements SportSessionMapper<TrainingCenterD
 
 	protected HeartRateInBeatsPerMinuteT mapHeartRate(Integer value) {
 		if (value != null) {
-			HeartRateInBeatsPerMinuteT hr = new HeartRateInBeatsPerMinuteT();
+			HeartRateInBeatsPerMinuteT hr = factory.createHeartRateInBeatsPerMinuteT();
 			hr.setValue(value.shortValue());
 			return hr;
 		}
@@ -141,10 +146,10 @@ public class TcxSportSessionMapper implements SportSessionMapper<TrainingCenterD
 		List<TrackpointT> trackpoints = new ArrayList<>();
 		if (gpsData != null) {
 			for (GpsData gps : gpsData) {
-				PositionT pos = new PositionT();
+				PositionT pos = factory.createPositionT();
 				pos.setLatitudeDegrees(gps.getLatitude().doubleValue());
 				pos.setLongitudeDegrees(gps.getLongitude().doubleValue());
-				TrackpointT trackpoint = new TrackpointT();
+				TrackpointT trackpoint = factory.createTrackpointT();
 				trackpoint.setTime(mapDate(gps.getTimestamp()));
 				trackpoint.setDistanceMeters(gps.getDistance().doubleValue());
 				trackpoint.setAltitudeMeters(gps.getAltitude().doubleValue());
@@ -159,7 +164,7 @@ public class TcxSportSessionMapper implements SportSessionMapper<TrainingCenterD
 		List<TrackpointT> trackpoints = new ArrayList<>();
 		if (heartRateData != null) {
 			for (HeartRateData hr : heartRateData) {
-				TrackpointT trackpoint = new TrackpointT();
+				TrackpointT trackpoint = factory.createTrackpointT();
 				trackpoint.setTime(mapDate(hr.getTimestamp()));
 				trackpoint.setDistanceMeters(hr.getDistance().doubleValue());
 				trackpoint.setHeartRateBpm(mapHeartRate(hr.getHeartRate()));

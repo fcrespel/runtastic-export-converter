@@ -35,6 +35,8 @@ public class SportSession implements Comparable<SportSession> {
 	private BigDecimal maxSpeed;
 	private Integer pauseDuration;
 	private Integer durationPerKm;
+	private BigDecimal temperature;
+	private String notes;
 	private Integer pulseAvg;
 	private Integer pulseMax;
 	private Boolean manual;
@@ -46,7 +48,11 @@ public class SportSession implements Comparable<SportSession> {
 	private Boolean indoor;
 	private Boolean altitudeRefined;
 	private String id;
+	private String weatherConditionId;
+	private String surfaceId;
+	private String subjectiveFeelingId;
 	private String sportTypeId;
+	private List<String> userEquipmentIds;
 
 	@JsonIgnore
 	private List<ElevationData> elevationData;

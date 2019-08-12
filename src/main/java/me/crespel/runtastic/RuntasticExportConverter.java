@@ -4,13 +4,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import me.crespel.runtastic.mapper.TcxSportSessionMapper;
+import me.crespel.runtastic.converter.ExportConverter;
 import me.crespel.runtastic.model.SportSession;
-import me.crespel.runtastic.parser.SportSessionParser;
 
 /**
  * Runtastic export converter main class.
@@ -18,8 +15,7 @@ import me.crespel.runtastic.parser.SportSessionParser;
  */
 public class RuntasticExportConverter {
 
-	protected final SportSessionParser parser = new SportSessionParser();
-	protected final TcxSportSessionMapper tcxMapper = new TcxSportSessionMapper();
+	protected final ExportConverter converter = new ExportConverter();
 
 	public static void main(String[] args) {
 		RuntasticExportConverter converter = new RuntasticExportConverter();
@@ -45,7 +41,7 @@ public class RuntasticExportConverter {
 			if (args.length < 4) {
 				throw new IllegalArgumentException("Missing arguments for action 'convert'");
 			}
-			doConvert(new File(args[1]), args[2], new File(args[3]));
+			doConvert(new File(args[1]), args[2], new File(args[3]), args.length > 4 ? args[4] : null);
 			break;
 		case "help":
 		default:
@@ -56,29 +52,29 @@ public class RuntasticExportConverter {
 
 	protected void printUsage() {
 		System.out.println("Expected arguments:");
-		System.out.println("  list <sport sessions path>");
-		System.out.println("  convert <sport sessions path> <activity id> <dest file.tcx>");
+		System.out.println("  list <export path>");
+		System.out.println("  convert <export path> <activity id | 'all'> <destination> ['gpx' | 'tcx']");
 		System.out.println("  help");
 	}
 
 	protected void doList(File path) throws FileNotFoundException, IOException {
-		List<SportSession> sessions = new ArrayList<>();
-		File[] files = path.listFiles(file -> file.getName().endsWith(".json"));
-		for (File file : files) {
-			sessions.add(parser.parseSportSession(file));
-		}
-
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		Collections.sort(sessions);
+		List<SportSession> sessions = converter.listSportSessions(path);
 		for (SportSession session : sessions) {
 			System.out.println(sdf.format(session.getStartTime()) + " - ID: " + session.getId() + ", type: " + session.getSportTypeId() + ", duration: " + session.getDuration() + "s");
 		}
 	}
 
-	protected void doConvert(File path, String id, File dest) throws FileNotFoundException, IOException {
-		SportSession session = parser.parseSportSession(new File(path, id + ".json"), true);
-		tcxMapper.mapSportSession(session, dest);
-		System.out.println("TCX file written to " + dest);
+	protected void doConvert(File path, String id, File dest, String format) throws FileNotFoundException, IOException {
+		if ("all".equalsIgnoreCase(id)) {
+			long startTime = System.currentTimeMillis();
+			int count = converter.convertSportSessions(path, dest, format);
+			long endTime = System.currentTimeMillis();
+			System.out.println(count + " activities successfully written to '" + dest + "' in " + (endTime - startTime) / 1000 + " seconds");
+		} else {
+			converter.convertSportSession(path, id, dest, format);
+			System.out.println("Activity successfully written to '" + dest + "'");
+		}
 	}
 
 }
