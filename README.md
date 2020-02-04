@@ -1,4 +1,4 @@
-[![Pipeline Status](https://gitlab.com/fcrespel/runtastic-export-converter/badges/master/pipeline.svg)](https://gitlab.com/fcrespel/runtastic-export-converter/pipelines)
+[![Build status](https://github.com/fcrespel/runtastic-export-converter/workflows/CI/badge.svg)](https://github.com/fcrespel/runtastic-export-converter/actions?query=workflow%3ACI)
 [![License](https://img.shields.io/github/license/fcrespel/runtastic-export-converter.svg)](https://opensource.org/licenses/MIT)
 
 # Runtastic Export Converter
@@ -23,7 +23,7 @@ First, make sure to unzip the Runtastic export archive in a directory of your ch
 
 To run the command line tool, use the `jar-with-dependencies` JAR file in the `target` directory, for example:
 
-    java -jar runtastic-export-converter-1.0.0-SNAPSHOT-jar-with-dependencies.jar
+    java -jar runtastic-export-converter-jar-with-dependencies.jar
     
     Expected arguments:
       list <export path>
@@ -32,15 +32,15 @@ To run the command line tool, use the `jar-with-dependencies` JAR file in the `t
 
 To list sport sessions from an export directory (here, `runtastic-export-20190807-000` in the current directory):
 
-    java -jar runtastic-export-converter-1.0.0-SNAPSHOT-jar-with-dependencies.jar list runtastic-export-20190807-000
+    java -jar runtastic-export-converter-jar-with-dependencies.jar list runtastic-export-20190807-000
 
 To convert a single sport session to TCX (here, session ID `fdd2f131-ef65-4e6c-b27e-50b8ecf465d4`):
 
-    java -jar runtastic-export-converter-1.0.0-SNAPSHOT-jar-with-dependencies.jar convert runtastic-export-20190807-000 fdd2f131-ef65-4e6c-b27e-50b8ecf465d4 fdd2f131-ef65-4e6c-b27e-50b8ecf465d4.tcx
+    java -jar runtastic-export-converter-jar-with-dependencies.jar convert runtastic-export-20190807-000 fdd2f131-ef65-4e6c-b27e-50b8ecf465d4 fdd2f131-ef65-4e6c-b27e-50b8ecf465d4.tcx
 
 To convert all sport sessions to GPX (here, in a `runtastic-export-gpx` directory):
 
-    java -jar runtastic-export-converter-1.0.0-SNAPSHOT-jar-with-dependencies.jar convert runtastic-export-20190807-000 all runtastic-export-gpx gpx
+    java -jar runtastic-export-converter-jar-with-dependencies.jar convert runtastic-export-20190807-000 all runtastic-export-gpx gpx
 
 ## License
 
