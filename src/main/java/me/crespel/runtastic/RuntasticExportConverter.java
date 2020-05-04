@@ -12,6 +12,7 @@ import me.crespel.runtastic.model.SportSession;
 /**
  * Runtastic export converter main class.
  * @author Fabien CRESPEL (fabien@crespel.net)
+ * @author Christian IMFELD (imfeldc@gmail.com)
  */
 public class RuntasticExportConverter {
 
@@ -37,6 +38,12 @@ public class RuntasticExportConverter {
 			}
 			doList(new File(args[1]));
 			break;
+		case "info":
+			if (args.length < 3) {
+				throw new IllegalArgumentException("Missing argument for action 'info'");
+			}
+			doInfo(new File(args[1]), args[2]);
+			break;
 		case "convert":
 			if (args.length < 4) {
 				throw new IllegalArgumentException("Missing arguments for action 'convert'");
@@ -53,6 +60,7 @@ public class RuntasticExportConverter {
 	protected void printUsage() {
 		System.out.println("Expected arguments:");
 		System.out.println("  list <export path>");
+		System.out.println("  info <export path> <activity id>");
 		System.out.println("  convert <export path> <activity id | 'all'> <destination> ['gpx' | 'tcx']");
 		System.out.println("  help");
 	}
@@ -61,7 +69,25 @@ public class RuntasticExportConverter {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		List<SportSession> sessions = converter.listSportSessions(path);
 		for (SportSession session : sessions) {
-			System.out.println(sdf.format(session.getStartTime()) + " - ID: " + session.getId() + ", type: " + session.getSportTypeId() + ", duration: " + session.getDuration() + "s");
+			System.out.println(sdf.format(session.getStartTime()) + " - ID: " + session.getId() + ", Sport Type: " + session.getSportTypeId() + ", duration: " + session.getDuration()/60000 + "min");
+		}
+	}
+
+	protected void doInfo(File path, String id) throws FileNotFoundException, IOException {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		List<SportSession> sessions = converter.listSportSessions(path);
+		for (SportSession session : sessions) {
+			if ( session.getId().equalsIgnoreCase(id) ) {
+				System.out.println(sdf.format(session.getStartTime()) + " - ID: " + session.getId() );
+				System.out.println("      Sport Type: " + session.getSportTypeId() + ", Surface Type: " + session.getSurfaceId() + ", Feeling Id: " + session.getSubjectiveFeelingId());
+				System.out.println("      Duration: " + session.getDuration() + " ms / " + session.getDuration()/1000 + " s / " + session.getDuration()/60000 + " min");
+				System.out.println("      Distance: " + session.getDistance().floatValue()/1000 + " km, Calories: " + session.getCalories());
+				System.out.println("      Avg Pace: " + session.getDurationPerKm().floatValue()/60000 + " min/km");
+				System.out.println("      Avg Speed: " + session.getAverageSpeed() + " km/h, Max Speed: " + session.getMaxSpeed() + " km/h");
+				System.out.println("      Start: " + sdf.format(session.getStartTime()) + ", End: " + sdf.format(session.getEndTime()) + ", Created: " + sdf.format(session.getCreatedAt())  + ", Updated: " + sdf.format(session.getUpdatedAt()));
+				System.out.println("      Elevation: (+) " + session.getElevationGain() + " m , (-) " + session.getElevationLoss() + " m");
+				System.out.println("      Notes: " + session.getNotes());
+			}
 		}
 	}
 
