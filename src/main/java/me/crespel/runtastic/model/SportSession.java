@@ -9,6 +9,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import com.topografix.gpx._1._1.GpxType;
+
 import lombok.Data;
 import lombok.ToString;
 
@@ -59,6 +61,9 @@ public class SportSession implements Comparable<SportSession> {
 
 	@JsonIgnore
 	private List<GpsData> gpsData;
+
+	@JsonIgnore
+	private GpxType gpx;
 
 	@JsonIgnore
 	private List<HeartRateData> heartRateData;

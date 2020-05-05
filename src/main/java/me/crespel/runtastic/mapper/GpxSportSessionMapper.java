@@ -53,6 +53,7 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 		trk.setName(session.getNotes());
 		trk.setType(mapSport(session.getSportTypeId()));
 		if (session.getGpsData() != null) {
+			// handling JSON GPS data
 			TrksegType trkseg = factory.createTrksegType();
 			for (GpsData gps : session.getGpsData()) {
 				WptType wpt = factory.createWptType();
@@ -70,6 +71,13 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 		gpx.setCreator("RuntasticExportConverter");
 		gpx.setMetadata(meta);
 		gpx.getTrk().add(trk);
+
+		if (session.getGpx() != null ) {
+			// handling GPX PGS data
+			//gpx.getTrk().addAll(session.getGpx().getTrk());
+			gpx.getTrk().get(0).getTrkseg().addAll(session.getGpx().getTrk().get(0).getTrkseg());
+		}
+
 		return gpx;
 	}
 

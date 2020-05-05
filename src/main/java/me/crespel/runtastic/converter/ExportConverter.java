@@ -38,6 +38,11 @@ public class ExportConverter {
 		return sessions;
 	}
 
+	public SportSession getSportSession(File path, String id) throws FileNotFoundException, IOException {
+		path = normalizeSportSessionPath(path);
+		return parser.parseSportSession(new File(path, id + ".json"), true);
+	}
+
 	public void convertSportSession(File path, String id, File dest, String format) throws FileNotFoundException, IOException {
 		path = normalizeSportSessionPath(path);
 		SportSession session = parser.parseSportSession(new File(path, id + ".json"), true);
@@ -57,7 +62,7 @@ public class ExportConverter {
 		Arrays.asList(files).parallelStream().forEach(file -> {
 			try {
 				SportSession session = parser.parseSportSession(file, true);
-				if (session.getGpsData() != null || session.getHeartRateData() != null) {
+				if (session.getGpsData() != null || session.getHeartRateData() != null || session.getGpx() != null) {
 					File destFile = new File(dest, buildFileName(session, format));
 					mapper.mapSportSession(session, format, destFile);
 				}
