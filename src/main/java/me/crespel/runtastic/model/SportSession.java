@@ -68,6 +68,9 @@ public class SportSession implements Comparable<SportSession> {
 	@JsonIgnore
 	private List<HeartRateData> heartRateData;
 
+	@JsonIgnore
+	private SportSessionAlbums photos;
+
 	@Override
 	public int compareTo(SportSession o) {
 		if (o == null) {

@@ -24,6 +24,7 @@ import me.crespel.runtastic.model.ElevationData;
 import me.crespel.runtastic.model.GpsData;
 import me.crespel.runtastic.model.HeartRateData;
 import me.crespel.runtastic.model.SportSession;
+import me.crespel.runtastic.model.SportSessionAlbums;
 
 /**
  * Sport session parser.
@@ -35,6 +36,7 @@ public class SportSessionParser {
 	public static final String ELEVATION_DATA_DIR = "Elevation-data";
 	public static final String GPS_DATA_DIR = "GPS-data";
 	public static final String HEARTRATE_DATA_DIR = "Heart-rate-data";
+	public static final String PHOTOS_DATA_DIR = "Photos\\Images-meta-data\\Sport-session-albums";
 
 	protected final ObjectMapper mapper = new ObjectMapper();
 
@@ -73,6 +75,10 @@ public class SportSessionParser {
 				if (heartRateDataFile.exists()) {
 					sportSession.setHeartRateData(parseHeartRateData(heartRateDataFile));
 				}
+				File photoSessionDataFile = new File(new File(file.getParentFile().getParentFile(), PHOTOS_DATA_DIR), file.getName());
+				if (photoSessionDataFile.exists()) {
+					sportSession.setPhotos(parseSportSessionAlbumsData(photoSessionDataFile));
+				}
 			}
 			return sportSession;
 		}
@@ -110,6 +116,16 @@ public class SportSessionParser {
 
 	public List<HeartRateData> parseHeartRateData(InputStream is) throws FileNotFoundException, IOException {
 		return mapper.readValue(is, new TypeReference<List<HeartRateData>>() {});
+	}
+
+	public SportSessionAlbums parseSportSessionAlbumsData(File file) throws FileNotFoundException, IOException {
+		try (InputStream is = new BufferedInputStream(new FileInputStream(file))) {
+			return parseSportSessionAlbumsData(is);
+		}
+	}
+
+	public SportSessionAlbums parseSportSessionAlbumsData(InputStream is) throws FileNotFoundException, IOException {
+		return mapper.readValue(is, new TypeReference<SportSessionAlbums>() {});
 	}
 
 }

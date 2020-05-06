@@ -3,7 +3,9 @@ package me.crespel.runtastic;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.sql.Time;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.List;
 
 import me.crespel.runtastic.converter.ExportConverter;
@@ -69,24 +71,25 @@ public class RuntasticExportConverter {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		List<SportSession> sessions = converter.listSportSessions(path);
 		for (SportSession session : sessions) {
-			System.out.println(sdf.format(session.getStartTime()) + " - ID: " + session.getId() + ", Sport Type: " + session.getSportTypeId() + ", duration: " + session.getDuration()/60000 + "min");
+			System.out.println(sdf.format(session.getStartTime()) + " - ID: " + session.getId() + ", Sport Type: " + session.getSportTypeId() + ", duration: " + Duration.ofMillis(session.getDuration()).toString() + " (" + session.getDuration()/60000 + " min)");
 		}
 	}
 
 	protected void doInfo(File path, String id) throws FileNotFoundException, IOException {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		SportSession session = converter.getSportSession(path, id);
-		if( session != null ) {
+		if ( session != null ) {
 			System.out.println(sdf.format(session.getStartTime()) + " - ID: " + session.getId() );
 			System.out.println("      Sport Type: " + session.getSportTypeId() + ", Surface Type: " + session.getSurfaceId() + ", Feeling Id: " + session.getSubjectiveFeelingId());
-			System.out.println("      Duration: " + session.getDuration() + " ms / " + session.getDuration()/1000 + " s / " + session.getDuration()/60000 + " min");
-			System.out.println("      Distance: " + session.getDistance().floatValue()/1000 + " km, Calories: " + session.getCalories());
-			System.out.println("      Avg Pace: " + session.getDurationPerKm().floatValue()/60000 + " min/km");
+			System.out.println("      Duration: " + Duration.ofMillis(session.getDuration()).toString() + " (" + session.getDuration()/60000 + " min)");
+			System.out.println("      Distance: " + (session.getDistance()!=null ? session.getDistance()/1000.0 : "n/a") + " km, Calories: " + session.getCalories());
+			System.out.println("      Avg Pace: " + (session.getDurationPerKm()!=null ? session.getDurationPerKm()/60000.0 : "n/a") + " min/km");
 			System.out.println("      Avg Speed: " + session.getAverageSpeed() + " km/h, Max Speed: " + session.getMaxSpeed() + " km/h");
 			System.out.println("      Start: " + sdf.format(session.getStartTime()) + ", End: " + sdf.format(session.getEndTime()) + ", Created: " + sdf.format(session.getCreatedAt())  + ", Updated: " + sdf.format(session.getUpdatedAt()));
 			System.out.println("      Elevation: (+) " + session.getElevationGain() + " m , (-) " + session.getElevationLoss() + " m");
 			System.out.println("      Notes: " + session.getNotes());
 			System.out.println("      Waypoints: " + ((session.getGpsData()==null) ? "0" : session.getGpsData().size()) + " JSON points, " + ((session.getGpx()==null) ? "0" : session.getGpx().getTrk().get(0).getTrkseg().get(0).getTrkpt().size()) + " GPX points.");
+			System.out.println("      Photos:" + (session.getPhotos()!=null ? session.getPhotos().getPhotosIds().toString() : "none"));
 		}
 	}
 
