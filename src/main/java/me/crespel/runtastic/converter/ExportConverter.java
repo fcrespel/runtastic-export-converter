@@ -38,6 +38,18 @@ public class ExportConverter {
 		return sessions;
 	}
 
+	public SportSession getSportSession(File path, String id) throws FileNotFoundException, IOException {
+		path = normalizeSportSessionPath(path);
+		List<SportSession> sessions = new ArrayList<>();
+		File[] files = path.listFiles(file -> file.getName().endsWith(id +".json"));
+		for (File file : files) {
+			sessions.add(parser.parseSportSession(file));
+		}
+
+		Collections.sort(sessions);
+		return sessions.get(0);
+	}
+
 	public void convertSportSession(File path, String id, File dest, String format) throws FileNotFoundException, IOException {
 		path = normalizeSportSessionPath(path);
 		SportSession session = parser.parseSportSession(new File(path, id + ".json"), true);
