@@ -28,6 +28,7 @@ To run the command line tool, use the `jar-with-dependencies` JAR file in the `t
     Expected arguments:
       list <export path>
       info <export path> <activity id>
+      photo <exort path> <photo id>
       convert <export path> <activity id | 'all'> <destination> ['gpx' | 'tcx']
       help
 
@@ -38,6 +39,11 @@ To list sport sessions from an export directory (here, `runtastic-export-2019080
 To display detail information of a sport session (here, session ID `fdd2f131-ef65-4e6c-b27e-50b8ecf465d4` and `runtastic-export-20190807-000` in the current directory):
 
     java -jar runtastic-export-converter-jar-with-dependencies.jar info runtastic-export-20190807-000 fdd2f131-ef65-4e6c-b27e-50b8ecf465d4
+
+To get a sport session for a dedicated photo (here, 5097940.jpg):
+
+    java -jar runtastic-export-converter-jar-with-dependencies.jar photo runtastic-export-20190807-000 5097940
+
 
 To convert a single sport session to TCX (here, session ID `fdd2f131-ef65-4e6c-b27e-50b8ecf465d4`):
 

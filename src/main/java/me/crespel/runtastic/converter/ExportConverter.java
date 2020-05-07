@@ -26,12 +26,12 @@ public class ExportConverter {
 	protected final SportSessionParser parser = new SportSessionParser();
 	protected final SportSessionMapper<?> mapper = new DelegatingSportSessionMapper();
 
-	public List<SportSession> listSportSessions(File path) throws FileNotFoundException, IOException {
+	public List<SportSession> listSportSessions(File path, boolean full) throws FileNotFoundException, IOException {
 		path = normalizeSportSessionPath(path);
 		List<SportSession> sessions = new ArrayList<>();
 		File[] files = path.listFiles(file -> file.getName().endsWith(".json"));
 		for (File file : files) {
-			sessions.add(parser.parseSportSession(file));
+			sessions.add(parser.parseSportSession(file,full));
 		}
 
 		Collections.sort(sessions);

@@ -6,6 +6,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -23,6 +25,7 @@ import com.topografix.gpx._1._1.GpxType;
 import me.crespel.runtastic.model.ElevationData;
 import me.crespel.runtastic.model.GpsData;
 import me.crespel.runtastic.model.HeartRateData;
+import me.crespel.runtastic.model.ImagesMetaData;
 import me.crespel.runtastic.model.SportSession;
 import me.crespel.runtastic.model.SportSessionAlbums;
 
@@ -30,13 +33,15 @@ import me.crespel.runtastic.model.SportSessionAlbums;
  * Sport session parser.
  * This class reads sport sessions and related data exported as JSON.
  * @author Fabien CRESPEL (fabien@crespel.net)
+ * @author Christian IMFELD (imfeldc@gmail.com)
  */
 public class SportSessionParser {
 
 	public static final String ELEVATION_DATA_DIR = "Elevation-data";
 	public static final String GPS_DATA_DIR = "GPS-data";
 	public static final String HEARTRATE_DATA_DIR = "Heart-rate-data";
-	public static final String PHOTOS_DATA_DIR = "Photos\\Images-meta-data\\Sport-session-albums";
+	public static final String PHOTOS_META_DATA_DIR = "Photos\\Images-meta-data";
+	public static final String PHOTOS_SESSION_ALBUMS_DATA_DIR = "Photos\\Images-meta-data\\Sport-session-albums";
 
 	protected final ObjectMapper mapper = new ObjectMapper();
 
@@ -75,9 +80,20 @@ public class SportSessionParser {
 				if (heartRateDataFile.exists()) {
 					sportSession.setHeartRateData(parseHeartRateData(heartRateDataFile));
 				}
-				File photoSessionDataFile = new File(new File(file.getParentFile().getParentFile(), PHOTOS_DATA_DIR), file.getName());
+				// read photo session data (\Photos\Images-meta-data\Sport-session-albums)
+				File photoSessionDataFile = new File(new File(file.getParentFile().getParentFile(), PHOTOS_SESSION_ALBUMS_DATA_DIR), file.getName());
 				if (photoSessionDataFile.exists()) {
-					sportSession.setPhotos(parseSportSessionAlbumsData(photoSessionDataFile));
+					sportSession.setSessionAlbum(parseSportSessionAlbumsData(photoSessionDataFile));
+					// read photo meta data (images mate data; \Photos\Images-meta-data)
+					List<ImagesMetaData> images = new ArrayList<>();
+					for (String photo : sportSession.getSessionAlbum().getPhotosIds()) {
+						File photoMetaDataFile = new File(new File(file.getParentFile().getParentFile(), PHOTOS_META_DATA_DIR), photo + ".json");
+						if (photoMetaDataFile.exists()) {
+							images.add(parseImagesMetaData(photoMetaDataFile));
+						}
+					}
+					Collections.sort(images);
+					sportSession.setImages(images);
 				}
 			}
 			return sportSession;
@@ -87,6 +103,7 @@ public class SportSessionParser {
 	public SportSession parseSportSession(InputStream is) throws FileNotFoundException, IOException {
 		return mapper.readValue(is, SportSession.class);
 	}
+
 
 	public List<ElevationData> parseElevationData(File file) throws FileNotFoundException, IOException {
 		try (InputStream is = new BufferedInputStream(new FileInputStream(file))) {
@@ -98,6 +115,7 @@ public class SportSessionParser {
 		return mapper.readValue(is, new TypeReference<List<ElevationData>>() {});
 	}
 
+
 	public List<GpsData> parseGpsData(File file) throws FileNotFoundException, IOException {
 		try (InputStream is = new BufferedInputStream(new FileInputStream(file))) {
 			return parseGpsData(is);
@@ -107,6 +125,7 @@ public class SportSessionParser {
 	public List<GpsData> parseGpsData(InputStream is) throws FileNotFoundException, IOException {
 		return mapper.readValue(is, new TypeReference<List<GpsData>>() {});
 	}
+
 
 	public List<HeartRateData> parseHeartRateData(File file) throws FileNotFoundException, IOException {
 		try (InputStream is = new BufferedInputStream(new FileInputStream(file))) {
@@ -118,6 +137,7 @@ public class SportSessionParser {
 		return mapper.readValue(is, new TypeReference<List<HeartRateData>>() {});
 	}
 
+
 	public SportSessionAlbums parseSportSessionAlbumsData(File file) throws FileNotFoundException, IOException {
 		try (InputStream is = new BufferedInputStream(new FileInputStream(file))) {
 			return parseSportSessionAlbumsData(is);
@@ -126,6 +146,17 @@ public class SportSessionParser {
 
 	public SportSessionAlbums parseSportSessionAlbumsData(InputStream is) throws FileNotFoundException, IOException {
 		return mapper.readValue(is, new TypeReference<SportSessionAlbums>() {});
+	}
+
+
+	public ImagesMetaData parseImagesMetaData(File file) throws FileNotFoundException, IOException {
+		try (InputStream is = new BufferedInputStream(new FileInputStream(file))) {
+			return parseImagesMetaData(is);
+		}
+	}
+
+	public ImagesMetaData parseImagesMetaData(InputStream is) throws FileNotFoundException, IOException {
+		return mapper.readValue(is, new TypeReference<ImagesMetaData>() {});
 	}
 
 }
