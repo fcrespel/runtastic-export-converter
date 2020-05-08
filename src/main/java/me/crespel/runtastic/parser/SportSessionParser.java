@@ -41,7 +41,7 @@ public class SportSessionParser {
 	public static final String GPS_DATA_DIR = "GPS-data";
 	public static final String HEARTRATE_DATA_DIR = "Heart-rate-data";
 	public static final String PHOTOS_META_DATA_DIR = "Photos\\Images-meta-data";
-	public static final String PHOTOS_SESSION_ALBUMS_DATA_DIR = "Photos\\Images-meta-data\\Sport-session-albums";
+	public static final String PHOTOS_SPORT_SESSION_ALBUMS_DIR = "Photos\\Images-meta-data\\Sport-session-albums";
 
 	protected final ObjectMapper mapper = new ObjectMapper();
 
@@ -81,7 +81,7 @@ public class SportSessionParser {
 					sportSession.setHeartRateData(parseHeartRateData(heartRateDataFile));
 				}
 				// read photo session data (\Photos\Images-meta-data\Sport-session-albums)
-				File photoSessionDataFile = new File(new File(file.getParentFile().getParentFile(), PHOTOS_SESSION_ALBUMS_DATA_DIR), file.getName());
+				File photoSessionDataFile = new File(new File(file.getParentFile().getParentFile(), PHOTOS_SPORT_SESSION_ALBUMS_DIR), file.getName());
 				if (photoSessionDataFile.exists()) {
 					sportSession.setSessionAlbum(parseSportSessionAlbumsData(photoSessionDataFile));
 					// read photo meta data (images mate data; \Photos\Images-meta-data)

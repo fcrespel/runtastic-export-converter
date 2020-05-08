@@ -93,7 +93,7 @@ public class RuntasticExportConverter {
 			System.out.println("      Avg Pace: " + (session.getDurationPerKm()!=null ? session.getDurationPerKm()/60000.0 : "n/a") + " min/km");
 			System.out.println("      Avg Speed: " + session.getAverageSpeed() + " km/h, Max Speed: " + session.getMaxSpeed() + " km/h");
 			System.out.println("      Start: " + sdf.format(session.getStartTime()) + ", End: " + sdf.format(session.getEndTime()) + ", Created: " + sdf.format(session.getCreatedAt())  + ", Updated: " + sdf.format(session.getUpdatedAt()));
-			System.out.println("      Elevation: (+) " + session.getElevationGain() + " m , (-) " + session.getElevationLoss() + " m  /  Latitude: " + session.getLatitude() + ", Longitude: " + session.getLongitude() + "( http://maps.google.com/maps?q=" + session.getLatitude() + "," + session.getLongitude() + " )");
+			System.out.println("      Elevation: (+) " + session.getElevationGain() + " m , (-) " + session.getElevationLoss() + " m  /  Latitude: " + session.getLatitude() + ", Longitude: " + session.getLongitude() + "  ( http://maps.google.com/maps?q=" + session.getLatitude() + "," + session.getLongitude() + " )");
 			System.out.println("      Notes: " + session.getNotes());
 			System.out.println("      Waypoints: " + ((session.getGpsData()==null) ? "0" : session.getGpsData().size()) + " JSON points, " + ((session.getGpx()==null) ? "0" : session.getGpx().getTrk().get(0).getTrkseg().get(0).getTrkpt().size()) + " GPX points.");
 			System.out.println("      Photos:" + (session.getSessionAlbum()!=null ? session.getSessionAlbum().getPhotosIds().toString() : "none"));
@@ -107,17 +107,13 @@ public class RuntasticExportConverter {
 
 	protected void doPhoto(File path, String id) throws FileNotFoundException, IOException {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		List<SportSession> sessions = converter.listSportSessions(path,true);
-		for (SportSession session : sessions) {
-			if( session.getImages() != null ) {
-				for ( ImagesMetaData image : session.getImages()) {
-					if( image != null ) {
-						if( image.getId() == Integer.parseInt(id) ) {
-							doInfo(path, session.getId());
-							System.out.println(sdf.format(session.getStartTime()) + " - ID: " + session.getId() );
-							System.out.println("             [" + image.getId() + ".jpg] " + sdf.format(image.getCreatedAt()) + ": " + image.getDescription() + " ( http://maps.google.com/maps?q=" + image.getLatitude() + "," + image.getLongitude() + " )" );
-						}
-					}
+		SportSession session = converter.getSportSessionWithPhoto(path,id);
+		for ( ImagesMetaData image : session.getImages()) {
+			if( image != null ) {
+				if( image.getId() == Integer.parseInt(id) ) {
+					doInfo(path, session.getId());
+					System.out.println(sdf.format(session.getStartTime()) + " - ID: " + session.getId() );
+					System.out.println("             [" + image.getId() + ".jpg] " + sdf.format(image.getCreatedAt()) + ": " + image.getDescription() + " ( http://maps.google.com/maps?q=" + image.getLatitude() + "," + image.getLongitude() + " )" );
 				}
 			}
 		}
