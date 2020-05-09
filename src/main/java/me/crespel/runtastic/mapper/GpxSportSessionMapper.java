@@ -94,14 +94,16 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 		}
 
 		MetadataType meta = factory.createMetadataType();
-		PersonType author = factory.createPersonType();
-		EmailType email = factory.createEmailType();
 		meta.setTime(mapDate(session.getCreatedAt()));
 		meta.setDesc(session.getNotes());
-		author.setName(session.getUser().getFirstName() + " " + session.getUser().getLastName());
-		email.setId(session.getUser().getEmail());
-		author.setEmail(email);
-		meta.setAuthor(author);
+		if( session.getUser() != null) {
+			PersonType author = factory.createPersonType();
+			EmailType email = factory.createEmailType();
+			author.setName(session.getUser().getFirstName() + " " + session.getUser().getLastName());
+			email.setId(session.getUser().getEmail());
+			author.setEmail(email);
+			meta.setAuthor(author);
+		}
 		meta.setKeywords("runtastic");	// add comma separated keywords
 		meta.setBounds(calculateBounds(gpx));
 		gpx.setMetadata(meta);
