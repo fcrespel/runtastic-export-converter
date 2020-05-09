@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import me.crespel.runtastic.model.GpsData;
 import me.crespel.runtastic.model.HeartRateData;
 import me.crespel.runtastic.model.ImagesMetaData;
+import me.crespel.runtastic.model.Shoe;
 import me.crespel.runtastic.model.SportSession;
 import me.crespel.runtastic.model.SportSessionAlbums;
 import me.crespel.runtastic.parser.SportSessionParser;
@@ -57,6 +58,12 @@ public class TestSportSessionParser {
 	@Test
 	public void testParseImagesMetaData2() throws JsonParseException, JsonMappingException, IOException {
 		ImagesMetaData data = parser.parseImagesMetaData(getClass().getResourceAsStream("ImagesMetaData2.json"));
+		System.out.println(data);
+	}
+
+	@Test
+	public void testParseShoe() throws JsonParseException, JsonMappingException, IOException {
+		Shoe data = parser.parseShoe(getClass().getResourceAsStream("Shoe.json"));
 		System.out.println(data);
 	}
 

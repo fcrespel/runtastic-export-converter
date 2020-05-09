@@ -26,6 +26,7 @@ import me.crespel.runtastic.model.ElevationData;
 import me.crespel.runtastic.model.GpsData;
 import me.crespel.runtastic.model.HeartRateData;
 import me.crespel.runtastic.model.ImagesMetaData;
+import me.crespel.runtastic.model.Shoe;
 import me.crespel.runtastic.model.SportSession;
 import me.crespel.runtastic.model.SportSessionAlbums;
 
@@ -157,6 +158,17 @@ public class SportSessionParser {
 
 	public ImagesMetaData parseImagesMetaData(InputStream is) throws FileNotFoundException, IOException {
 		return mapper.readValue(is, new TypeReference<ImagesMetaData>() {});
+	}
+
+
+	public Shoe parseShoe(File file) throws FileNotFoundException, IOException {
+		try (InputStream is = new BufferedInputStream(new FileInputStream(file))) {
+			return parseShoe(is);
+		}
+	}
+
+	public Shoe parseShoe(InputStream is) throws FileNotFoundException, IOException {
+		return mapper.readValue(is, new TypeReference<Shoe>() {});
 	}
 
 }

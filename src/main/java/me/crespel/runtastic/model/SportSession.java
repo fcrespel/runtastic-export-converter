@@ -15,7 +15,7 @@ import lombok.Data;
 import lombok.ToString;
 
 @Data
-@ToString(of = {"id", "sportTypeId", "startTime", "duration", "distance"})
+@ToString(of = {"id", "sportTypeId", "startTime", "duration", "distance", "userEquipmentIds"})
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SportSession implements Comparable<SportSession> {
