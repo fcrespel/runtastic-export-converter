@@ -29,6 +29,7 @@ import me.crespel.runtastic.model.ImagesMetaData;
 import me.crespel.runtastic.model.Shoe;
 import me.crespel.runtastic.model.SportSession;
 import me.crespel.runtastic.model.SportSessionAlbums;
+import me.crespel.runtastic.model.User;
 
 /**
  * Sport session parser.
@@ -171,4 +172,14 @@ public class SportSessionParser {
 		return mapper.readValue(is, new TypeReference<Shoe>() {});
 	}
 
+
+	public User parseUser(File file) throws FileNotFoundException, IOException {
+		try (InputStream is = new BufferedInputStream(new FileInputStream(file))) {
+			return parseUser(is);
+		}
+	}
+
+	public User parseUser(InputStream is) throws FileNotFoundException, IOException {
+		return mapper.readValue(is, new TypeReference<User>() {});
+	}
 }

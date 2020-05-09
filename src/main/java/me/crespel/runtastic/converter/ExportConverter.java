@@ -14,6 +14,7 @@ import me.crespel.runtastic.mapper.SportSessionMapper;
 import me.crespel.runtastic.model.ImagesMetaData;
 import me.crespel.runtastic.model.SportSession;
 import me.crespel.runtastic.model.SportSessionAlbums;
+import me.crespel.runtastic.model.User;
 import me.crespel.runtastic.parser.SportSessionParser;
 
 /**
@@ -27,6 +28,7 @@ public class ExportConverter {
 	public static final String PHOTOS_DIR = "Photos";
 	public static final String PHOTOS_META_DATA_DIR = "Photos\\Images-meta-data";
 	public static final String PHOTOS_SPORT_SESSION_ALBUMS_DIR = "Photos\\Images-meta-data\\Sport-session-albums";
+	public static final String USER_DIR = "User";
 	public static final String DEFAULT_FORMAT = "tcx";
 
 	protected final SportSessionParser parser = new SportSessionParser();
@@ -42,6 +44,11 @@ public class ExportConverter {
 
 		Collections.sort(sessions);
 		return sessions;
+	}
+
+	public User getUser(File path) throws FileNotFoundException, IOException {
+		path = normalizeUserPath(path);
+		return parser.parseUser(new File(path, "user.json"));
 	}
 
 	public SportSession getSportSession(File path, String id) throws FileNotFoundException, IOException {
@@ -145,6 +152,16 @@ public class ExportConverter {
 	protected File normalizePhotoSportSessionAlbumPath(File path) {
 		if (!PHOTOS_SPORT_SESSION_ALBUMS_DIR.equals(path.getName())) {
 			path = new File(path, PHOTOS_SPORT_SESSION_ALBUMS_DIR);
+		}
+		if (!path.isDirectory()) {
+			throw new IllegalArgumentException("Export path '" + path + "' is not a valid directory");
+		}
+		return path;
+	}
+
+	protected File normalizeUserPath(File path) {
+		if (!USER_DIR.equals(path.getName())) {
+			path = new File(path, USER_DIR);
 		}
 		if (!path.isDirectory()) {
 			throw new IllegalArgumentException("Export path '" + path + "' is not a valid directory");

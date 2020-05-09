@@ -10,6 +10,7 @@ import java.util.List;
 import me.crespel.runtastic.converter.ExportConverter;
 import me.crespel.runtastic.model.ImagesMetaData;
 import me.crespel.runtastic.model.SportSession;
+import me.crespel.runtastic.model.User;
 
 /**
  * Runtastic export converter main class.
@@ -40,6 +41,12 @@ public class RuntasticExportConverter {
 			}
 			doList(new File(args[1]));
 			break;
+		case "user":
+			if (args.length < 2) {
+				throw new IllegalArgumentException("Missing argument for action 'list'");
+			}
+			doUser(new File(args[1]));
+			break;
 		case "info":
 			if (args.length < 3) {
 				throw new IllegalArgumentException("Missing argument for action 'info'");
@@ -68,6 +75,7 @@ public class RuntasticExportConverter {
 	protected void printUsage() {
 		System.out.println("Expected arguments:");
 		System.out.println("  list <export path>");
+		System.out.println("  user <export path>");
 		System.out.println("  info <export path> <activity id>");
 		System.out.println("  photo <exort path> <photo id>");
 		System.out.println("  convert <export path> <activity id | 'all'> <destination> ['gpx' | 'tcx']");
@@ -80,6 +88,16 @@ public class RuntasticExportConverter {
 		for (SportSession session : sessions) {
 			System.out.println(sdf.format(session.getStartTime()) + " - ID: " + session.getId() + ", Sport Type: " + session.getSportTypeId() + ", duration: " + Duration.ofMillis(session.getDuration()).toString() + " (" + session.getDuration()/60000 + " min)");
 		}
+	}
+
+	protected void doUser(File path) throws FileNotFoundException, IOException {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		User user = converter.getUser(path);
+		System.out.println(sdf.format(user.getCreatedAt()) + " - ID: " + user.getFbUserId() );
+		System.out.println("      Name: " + user.getFirstName() + " " + user.getLastName() + ",  Birthday: " + user.getBirthday() + ",  City: " + user.getCityName() );
+		System.out.println("      Mail: " + user.getEmail() + " (" + user.getFbProxiedEMail() + ")");
+		System.out.println("      Gender: " + user.getGender() + ", Height: " + user.getHeight() + ", Weight: " + user.getWeight() + ", Language: " + user.getLanguage() );
+		System.out.println("      Created At: " + sdf.format(user.getCreatedAt()) + ",  Confirmed At: " + sdf.format(user.getConfirmedAt()) + ",  Last Sign-in At: " + sdf.format(user.getLastSignInAt()) + ",  Updated At: " + sdf.format(user.getUpdatedAt()) );
 	}
 
 	protected void doInfo(File path, String id) throws FileNotFoundException, IOException {

@@ -14,6 +14,7 @@ import me.crespel.runtastic.model.ImagesMetaData;
 import me.crespel.runtastic.model.Shoe;
 import me.crespel.runtastic.model.SportSession;
 import me.crespel.runtastic.model.SportSessionAlbums;
+import me.crespel.runtastic.model.User;
 import me.crespel.runtastic.parser.SportSessionParser;
 
 /**
@@ -64,6 +65,12 @@ public class TestSportSessionParser {
 	@Test
 	public void testParseShoe() throws JsonParseException, JsonMappingException, IOException {
 		Shoe data = parser.parseShoe(getClass().getResourceAsStream("Shoe.json"));
+		System.out.println(data);
+	}
+
+	@Test
+	public void testParseUser() throws JsonParseException, JsonMappingException, IOException {
+		User data = parser.parseUser(getClass().getResourceAsStream("User.json"));
 		System.out.println(data);
 	}
 
