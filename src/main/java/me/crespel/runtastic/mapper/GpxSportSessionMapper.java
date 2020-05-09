@@ -20,11 +20,13 @@ import com.topografix.gpx._1._1.TrksegType;
 import com.topografix.gpx._1._1.WptType;
 
 import me.crespel.runtastic.model.GpsData;
+import me.crespel.runtastic.model.ImagesMetaData;
 import me.crespel.runtastic.model.SportSession;
 
 /**
  * GPX sport session mapper.
  * @author Fabien CRESPEL (fabien@crespel.net)
+ * @author Christian IMFELD (imfeldc@gmail.com)
  */
 public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 
@@ -46,8 +48,27 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 
 	@Override
 	public GpxType mapSportSession(SportSession session, String format) {
+
+		GpxType gpx = factory.createGpxType();
+		gpx.setVersion("1.1");
+		gpx.setCreator("RuntasticExportConverter");
+
 		MetadataType meta = factory.createMetadataType();
 		meta.setTime(mapDate(session.getStartTime()));
+		gpx.setMetadata(meta);
+
+		if( session.getImages() != null ) {
+			// Add the photos as "way points"
+			for( ImagesMetaData image : session.getImages()) {
+				WptType wpt = factory.createWptType();
+				wpt.setLat(image.getLatitude());
+				wpt.setLon(image.getLongitude());
+				wpt.setName("Photo: " + image.getId() + ".jpg");
+				wpt.setDesc(image.getDescription());
+				wpt.setType("photo");
+				gpx.getWpt().add(wpt);
+			}
+		}
 
 		TrkType trk = factory.createTrkType();
 		trk.setName(session.getNotes());
@@ -65,11 +86,6 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 			}
 			trk.getTrkseg().add(trkseg);
 		}
-
-		GpxType gpx = factory.createGpxType();
-		gpx.setVersion("1.1");
-		gpx.setCreator("RuntasticExportConverter");
-		gpx.setMetadata(meta);
 		gpx.getTrk().add(trk);
 
 		if (session.getGpx() != null ) {
