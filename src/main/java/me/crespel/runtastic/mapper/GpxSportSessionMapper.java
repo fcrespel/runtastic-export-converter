@@ -140,6 +140,8 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 			return "9"; // Running
 		case "3":
 			return "1"; // Biking
+		case "7":
+			return "Hiking"; // Hiking
 		default:
 			return ""; // Other
 		}
