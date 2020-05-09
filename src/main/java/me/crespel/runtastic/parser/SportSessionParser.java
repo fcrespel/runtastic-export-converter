@@ -44,6 +44,7 @@ public class SportSessionParser {
 	public static final String HEARTRATE_DATA_DIR = "Heart-rate-data";
 	public static final String PHOTOS_META_DATA_DIR = "Photos\\Images-meta-data";
 	public static final String PHOTOS_SPORT_SESSION_ALBUMS_DIR = "Photos\\Images-meta-data\\Sport-session-albums";
+	public static final String USER_DIR = "User";
 
 	protected final ObjectMapper mapper = new ObjectMapper();
 
@@ -97,6 +98,8 @@ public class SportSessionParser {
 					Collections.sort(images);
 					sportSession.setImages(images);
 				}
+				// read and add user
+				sportSession.setUser(parseUser(new File(new File(file.getParentFile().getParentFile(), USER_DIR), "user.json")));
 			}
 			return sportSession;
 		}

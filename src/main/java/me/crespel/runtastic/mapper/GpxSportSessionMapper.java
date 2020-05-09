@@ -12,9 +12,12 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import com.topografix.gpx._1._1.BoundsType;
+import com.topografix.gpx._1._1.EmailType;
 import com.topografix.gpx._1._1.GpxType;
 import com.topografix.gpx._1._1.MetadataType;
 import com.topografix.gpx._1._1.ObjectFactory;
+import com.topografix.gpx._1._1.PersonType;
 import com.topografix.gpx._1._1.TrkType;
 import com.topografix.gpx._1._1.TrksegType;
 import com.topografix.gpx._1._1.WptType;
@@ -53,10 +56,6 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 		gpx.setVersion("1.1");
 		gpx.setCreator("RuntasticExportConverter");
 
-		MetadataType meta = factory.createMetadataType();
-		meta.setTime(mapDate(session.getStartTime()));
-		gpx.setMetadata(meta);
-
 		if( session.getImages() != null ) {
 			// Add the photos as "way points"
 			for( ImagesMetaData image : session.getImages()) {
@@ -66,6 +65,7 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 				wpt.setName("Photo: " + image.getId() + ".jpg");
 				wpt.setDesc(image.getDescription());
 				wpt.setType("photo");
+				wpt.setTime(mapDate(image.getCreatedAt()));
 				gpx.getWpt().add(wpt);
 			}
 		}
@@ -92,6 +92,47 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 			// handling GPX GPS data; add them to first /trk as /trkseg
 			gpx.getTrk().get(0).getTrkseg().addAll(session.getGpx().getTrk().get(0).getTrkseg());
 		}
+
+		MetadataType meta = factory.createMetadataType();
+		PersonType author = factory.createPersonType();
+		EmailType email = factory.createEmailType();
+		meta.setTime(mapDate(session.getCreatedAt()));
+		meta.setDesc(session.getNotes());
+		author.setName(session.getUser().getFirstName() + " " + session.getUser().getLastName());
+		email.setId(session.getUser().getEmail());
+		author.setEmail(email);
+		meta.setAuthor(author);
+		meta.setKeywords("runtastic");	// add comma separated keywords
+		meta.setBounds(calculateBounds(gpx));
+		gpx.setMetadata(meta);
+
+		// Add bounds as waypoints
+		WptType wpt1 = factory.createWptType();
+		wpt1.setLat(meta.getBounds().getMaxlat());
+		wpt1.setLon(meta.getBounds().getMaxlon());
+		wpt1.setName("Bounds: top-right corner");
+		wpt1.setType("bounds");
+		gpx.getWpt().add(wpt1);
+		WptType wpt2 = factory.createWptType();
+		wpt2.setLat(meta.getBounds().getMinlat());
+		wpt2.setLon(meta.getBounds().getMaxlon());
+		wpt2.setName("Bounds: down-right corner");
+		wpt2.setType("bounds");
+		gpx.getWpt().add(wpt2);
+		WptType wpt3 = factory.createWptType();
+		wpt3.setLat(meta.getBounds().getMaxlat());
+		wpt3.setLon(meta.getBounds().getMinlon());
+		wpt3.setName("Bounds: top-left corner");
+		wpt3.setType("bounds");
+		gpx.getWpt().add(wpt3);
+		WptType wpt4 = factory.createWptType();
+		wpt4.setLat(meta.getBounds().getMinlat());
+		wpt4.setLon(meta.getBounds().getMinlon());
+		wpt4.setName("Bounds: down-left corner");
+		wpt4.setType("bounds");
+		gpx.getWpt().add(wpt4);
+
+
 
 		return gpx;
 	}
@@ -146,4 +187,45 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 		}
 	}
 
+	protected BoundsType calculateBounds( GpxType gpx ) {
+		BoundsType bounds = factory.createBoundsType();
+
+		// search through waypoints (=photos)
+		for( WptType wpt : gpx.getWpt() ) {
+			if( bounds.getMaxlat() == null || (bounds.getMaxlat().compareTo(wpt.getLat()) == -1)) {
+					bounds.setMaxlat(wpt.getLat());
+			}
+			if( bounds.getMinlat() == null || (bounds.getMinlat().compareTo(wpt.getLat()) == 1)) {
+				bounds.setMinlat(wpt.getLat());
+			}
+			if( bounds.getMaxlon() == null || (bounds.getMaxlon().compareTo(wpt.getLon()) == -1)) {
+				bounds.setMaxlon(wpt.getLon());
+			}
+			if( bounds.getMinlon() == null || (bounds.getMinlon().compareTo(wpt.getLon()) == 1)) {
+				bounds.setMinlon(wpt.getLon());
+			}
+		}
+
+		// search through sport session tracks
+		for( TrkType trk : gpx.getTrk()) {
+			for( TrksegType trkseg : trk.getTrkseg() ) {
+				for( WptType wpt : trkseg.getTrkpt() ) {
+					if( bounds.getMaxlat() == null || (bounds.getMaxlat().compareTo(wpt.getLat()) == -1 )) {
+						bounds.setMaxlat(wpt.getLat());
+					}
+					if( bounds.getMinlat() == null || (bounds.getMinlat().compareTo(wpt.getLat()) == 1)) {
+						bounds.setMinlat(wpt.getLat());
+					}
+					if( bounds.getMaxlon() == null || (bounds.getMaxlon().compareTo(wpt.getLon()) == -1)) {
+						bounds.setMaxlon(wpt.getLon());
+					}
+					if( bounds.getMinlon() == null || (bounds.getMinlon().compareTo(wpt.getLon()) == 1)) {
+						bounds.setMinlon(wpt.getLon());
+					}
+				}
+			}
+		}
+
+		return bounds;
+	}
 }

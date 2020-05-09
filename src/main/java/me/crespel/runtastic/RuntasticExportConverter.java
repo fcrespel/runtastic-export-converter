@@ -120,6 +120,13 @@ public class RuntasticExportConverter {
 					System.out.println("             [" + image.getId() + ".jpg] " + sdf.format(image.getCreatedAt()) + ": " + image.getDescription() + " ( http://maps.google.com/maps?q=" + image.getLatitude() + "," + image.getLongitude() + " )" );
 				}
 			}
+			if ( session.getUser() != null ) {
+				User user = session.getUser();
+				System.out.println("      Name: " + user.getFirstName() + " " + user.getLastName() + ",  Birthday: " + user.getBirthday() + ",  City: " + user.getCityName() );
+				System.out.println("      Mail: " + user.getEmail() + " (" + user.getFbProxiedEMail() + ")");
+				System.out.println("      Gender: " + user.getGender() + ", Height: " + user.getHeight() + ", Weight: " + user.getWeight() + ", Language: " + user.getLanguage() );
+				System.out.println("      Created At: " + sdf.format(user.getCreatedAt()) + ",  Confirmed At: " + sdf.format(user.getConfirmedAt()) + ",  Last Sign-in At: " + sdf.format(user.getLastSignInAt()) + ",  Updated At: " + sdf.format(user.getUpdatedAt()) );
+			}
 		}
 	}
 

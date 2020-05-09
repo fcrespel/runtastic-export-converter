@@ -74,6 +74,9 @@ public class SportSession implements Comparable<SportSession> {
 	@JsonIgnore
 	private List<ImagesMetaData> images;
 
+	@JsonIgnore
+	private User user;
+
 	@Override
 	public int compareTo(SportSession o) {
 		if (o == null) {
