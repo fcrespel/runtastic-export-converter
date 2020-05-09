@@ -89,8 +89,7 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 		gpx.getTrk().add(trk);
 
 		if (session.getGpx() != null ) {
-			// handling GPX GPS data
-			//gpx.getTrk().addAll(session.getGpx().getTrk());
+			// handling GPX GPS data; add them to first /trk as /trkseg
 			gpx.getTrk().get(0).getTrkseg().addAll(session.getGpx().getTrk().get(0).getTrkseg());
 		}
 
