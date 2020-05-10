@@ -35,7 +35,7 @@ public class ExportConverter {
 	protected final SportSessionMapper<?> mapper = new DelegatingSportSessionMapper();
 
 	public List<SportSession> listSportSessions(File path, boolean full) throws FileNotFoundException, IOException {
-		path = normalizeSportSessionPath(path);
+		path = normalizeExportPath(path, SPORT_SESSIONS_DIR);
 		List<SportSession> sessions = new ArrayList<>();
 		File[] files = path.listFiles(file -> file.getName().endsWith(".json"));
 		for (File file : files) {
@@ -47,28 +47,26 @@ public class ExportConverter {
 	}
 
 	public User getUser(File path) throws FileNotFoundException, IOException {
-		path = normalizeUserPath(path);
-		return parser.parseUser(new File(path, "user.json"));
+		return parser.parseUser(new File(normalizeExportPath(path, USER_DIR), "user.json"));
 	}
 
 	public SportSession getSportSession(File path, String id) throws FileNotFoundException, IOException {
-		path = normalizeSportSessionPath(path);
-		return parser.parseSportSession(new File(path, id + ".json"), true);
+		return parser.parseSportSession(new File(normalizeExportPath(path, SPORT_SESSIONS_DIR), id + ".json"), true);
 	}
 
 	public SportSession getSportSessionWithPhoto(File path, String photoid) throws FileNotFoundException, IOException {
 		String sessionid = null;
 
-		File photofile = new File(normalizePhotoPath(path), photoid + ".jpg");
+		File photofile = new File(normalizeExportPath(path, PHOTOS_DIR), photoid + ".jpg");
 		if( photofile.exists() ) {
 			// photo file found ...
 
-			ImagesMetaData image = parser.parseImagesMetaData(new File(normalizePhotoMetaDataPath(path), photoid + ".json"));
+			ImagesMetaData image = parser.parseImagesMetaData(new File(normalizeExportPath(path, PHOTOS_META_DATA_DIR), photoid + ".json"));
 			if( image != null ) {
 				// photo meta data file found ...
 
 				// search trough sport session album data, to find sport session related to the photo
-				File[] files = normalizePhotoSportSessionAlbumPath(path).listFiles(file -> file.getName().endsWith(".json"));
+				File[] files = normalizeExportPath(path, PHOTOS_SPORT_SESSION_ALBUMS_DIR).listFiles(file -> file.getName().endsWith(".json"));
 				for( File file : files ) {
 					try {
 						SportSessionAlbums mysessionalbum = parser.parseSportSessionAlbumsData(file);
@@ -90,8 +88,7 @@ public class ExportConverter {
 	}
 
 	public void convertSportSession(File path, String id, File dest, String format) throws FileNotFoundException, IOException {
-		path = normalizeSportSessionPath(path);
-		SportSession session = parser.parseSportSession(new File(path, id + ".json"), true);
+		SportSession session = parser.parseSportSession(new File(normalizeExportPath(path, SPORT_SESSIONS_DIR), id + ".json"), true);
 		if (dest.isDirectory()) {
 			dest = new File(dest, buildFileName(session, format));
 		}
@@ -103,8 +100,7 @@ public class ExportConverter {
 			throw new IllegalArgumentException("Destination '" + dest + "' is not a valid directory");
 		}
 		dest.mkdirs();
-		path = normalizeSportSessionPath(path);
-		File[] files = path.listFiles(file -> file.getName().endsWith(".json"));
+		File[] files = normalizeExportPath(path, SPORT_SESSIONS_DIR).listFiles(file -> file.getName().endsWith(".json"));
 		Arrays.asList(files).parallelStream().forEach(file -> {
 			try {
 				SportSession session = parser.parseSportSession(file, true);
@@ -119,9 +115,17 @@ public class ExportConverter {
 		return files.length;
 	}
 
-	protected File normalizeSportSessionPath(File path) {
-		if (!SPORT_SESSIONS_DIR.equals(path.getName())) {
-			path = new File(path, SPORT_SESSIONS_DIR);
+
+	protected File normalizeExportPath(File path, String subpath) {
+		// check if "Sport Session" sub-directory is provided ...
+		if (SPORT_SESSIONS_DIR.equals(path.getName())) {
+			// if yes, remove them.
+			path = path.getParentFile();
+		}
+		// check if already path including sub-path is provided ...
+		if (!subpath.equals(path.getName())) {
+			// if not, add sub-path to path.
+			path = new File(path, subpath);
 		}
 		if (!path.isDirectory()) {
 			throw new IllegalArgumentException("Export path '" + path + "' is not a valid directory");
@@ -129,45 +133,6 @@ public class ExportConverter {
 		return path;
 	}
 
-	protected File normalizePhotoPath(File path) {
-		if (!PHOTOS_DIR.equals(path.getName())) {
-			path = new File(path, PHOTOS_DIR);
-		}
-		if (!path.isDirectory()) {
-			throw new IllegalArgumentException("Export path '" + path + "' is not a valid directory");
-		}
-		return path;
-	}
-
-	protected File normalizePhotoMetaDataPath(File path) {
-		if (!PHOTOS_META_DATA_DIR.equals(path.getName())) {
-			path = new File(path, PHOTOS_META_DATA_DIR);
-		}
-		if (!path.isDirectory()) {
-			throw new IllegalArgumentException("Export path '" + path + "' is not a valid directory");
-		}
-		return path;
-	}
-
-	protected File normalizePhotoSportSessionAlbumPath(File path) {
-		if (!PHOTOS_SPORT_SESSION_ALBUMS_DIR.equals(path.getName())) {
-			path = new File(path, PHOTOS_SPORT_SESSION_ALBUMS_DIR);
-		}
-		if (!path.isDirectory()) {
-			throw new IllegalArgumentException("Export path '" + path + "' is not a valid directory");
-		}
-		return path;
-	}
-
-	protected File normalizeUserPath(File path) {
-		if (!USER_DIR.equals(path.getName())) {
-			path = new File(path, USER_DIR);
-		}
-		if (!path.isDirectory()) {
-			throw new IllegalArgumentException("Export path '" + path + "' is not a valid directory");
-		}
-		return path;
-	}
 
 	protected String buildFileName(SportSession session, String format) {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
