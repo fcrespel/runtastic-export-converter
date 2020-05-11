@@ -83,24 +83,25 @@ public class SportSessionParser {
 				if (heartRateDataFile.exists()) {
 					sportSession.setHeartRateData(parseHeartRateData(heartRateDataFile));
 				}
-				// read photo session data (\Photos\Images-meta-data\Sport-session-albums)
-				File photoSessionDataFile = new File(new File(file.getParentFile().getParentFile(), PHOTOS_SPORT_SESSION_ALBUMS_DIR), file.getName());
-				if (photoSessionDataFile.exists()) {
-					sportSession.setSessionAlbum(parseSportSessionAlbumsData(photoSessionDataFile));
-					// read photo meta data (images mate data; \Photos\Images-meta-data)
-					List<ImagesMetaData> images = new ArrayList<>();
-					for (String photo : sportSession.getSessionAlbum().getPhotosIds()) {
-						File photoMetaDataFile = new File(new File(file.getParentFile().getParentFile(), PHOTOS_META_DATA_DIR), photo + ".json");
-						if (photoMetaDataFile.exists()) {
-							images.add(parseImagesMetaData(photoMetaDataFile));
-						}
-					}
-					Collections.sort(images);
-					sportSession.setImages(images);
-				}
-				// read and add user
-				sportSession.setUser(parseUser(new File(new File(file.getParentFile().getParentFile(), USER_DIR), "user.json")));
 			}
+
+			// read photo session data (\Photos\Images-meta-data\Sport-session-albums)
+			File photoSessionDataFile = new File(new File(file.getParentFile().getParentFile(), PHOTOS_SPORT_SESSION_ALBUMS_DIR), file.getName());
+			if (photoSessionDataFile.exists()) {
+				sportSession.setSessionAlbum(parseSportSessionAlbumsData(photoSessionDataFile));
+				// read photo meta data (images mate data; \Photos\Images-meta-data)
+				List<ImagesMetaData> images = new ArrayList<>();
+				for (String photo : sportSession.getSessionAlbum().getPhotosIds()) {
+					File photoMetaDataFile = new File(new File(file.getParentFile().getParentFile(), PHOTOS_META_DATA_DIR), photo + ".json");
+					if (photoMetaDataFile.exists()) {
+						images.add(parseImagesMetaData(photoMetaDataFile));
+					}
+				}
+				Collections.sort(images);
+				sportSession.setImages(images);
+			}
+			// read and add user
+			sportSession.setUser(parseUser(new File(new File(file.getParentFile().getParentFile(), USER_DIR), "user.json")));
 			return sportSession;
 		}
 	}

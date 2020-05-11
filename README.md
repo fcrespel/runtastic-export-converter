@@ -26,7 +26,7 @@ To run the command line tool, use the `jar-with-dependencies` JAR file in the `t
     java -jar runtastic-export-converter-jar-with-dependencies.jar
     
     Expected arguments:
-      list <export path>
+      list <export path> <filter>
       user <export path>
       info <export path> <activity id>
       photo <exort path> <photo id>
@@ -36,6 +36,11 @@ To run the command line tool, use the `jar-with-dependencies` JAR file in the `t
 To list sport sessions from an export directory (here, `runtastic-export-20190807-000` in the current directory):
 
     java -jar runtastic-export-converter-jar-with-dependencies.jar list runtastic-export-20190807-000
+
+To list sport sessions from an export directory, for a "specific" filter, add the filter (keyword) as 3rd option. The tool searches within session description, session id, photo id, photo description and equipment id for the filter (keword). Here an example seraching for 'Marathon':
+
+    java -jar runtastic-export-converter-jar-with-dependencies.jar list runtastic-export-20190807-000 Marathon
+
 
 To display user information from an export directory:
 

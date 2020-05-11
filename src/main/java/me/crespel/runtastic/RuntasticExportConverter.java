@@ -39,7 +39,7 @@ public class RuntasticExportConverter {
 			if (args.length < 2) {
 				throw new IllegalArgumentException("Missing argument for action 'list'");
 			}
-			doList(new File(args[1]));
+			doListWithFilter(new File(args[1]), args.length > 2 ? args[2] : null);
 			break;
 		case "user":
 			if (args.length < 2) {
@@ -74,7 +74,7 @@ public class RuntasticExportConverter {
 
 	protected void printUsage() {
 		System.out.println("Expected arguments:");
-		System.out.println("  list <export path>");
+		System.out.println("  list <export path> <filter>");
 		System.out.println("  user <export path>");
 		System.out.println("  info <export path> <activity id>");
 		System.out.println("  photo <exort path> <photo id>");
@@ -83,10 +83,16 @@ public class RuntasticExportConverter {
 	}
 
 	protected void doList(File path) throws FileNotFoundException, IOException {
+		doListWithFilter(path, null);
+	}
+
+	protected void doListWithFilter(File path, String filter) throws FileNotFoundException, IOException {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		List<SportSession> sessions = converter.listSportSessions(path,false);
 		for (SportSession session : sessions) {
-			System.out.println(sdf.format(session.getStartTime()) + " - ID: " + session.getId() + ", Sport Type: " + session.getSportTypeId() + ", duration: " + Duration.ofMillis(session.getDuration()).toString() + " (" + session.getDuration()/60000 + " min)");
+			if( filter == null || session.contains(filter) ) {
+				System.out.println(sdf.format(session.getStartTime()) + " - ID: " + session.getId() + ", Sport Type: " + session.getSportTypeId() + ", duration: " + Duration.ofMillis(session.getDuration()).toString() + " (" + session.getDuration()/60000 + " min), Notes: '" + session.getNotes() + "'");
+			}
 		}
 	}
 

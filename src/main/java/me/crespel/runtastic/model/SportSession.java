@@ -77,6 +77,43 @@ public class SportSession implements Comparable<SportSession> {
 	@JsonIgnore
 	private User user;
 
+	public Boolean contains( String filter ) {
+		Boolean ret = false;
+		if( filter != null) {
+			if (getId().equals(filter)) {
+				// id is equal to filter (keyword)
+				ret = true;
+			} else if ((getNotes() != null) && getNotes().contains(filter)) {
+				// notes are available and contains the filter (keyword)
+				ret = true;
+			} else if (getUserEquipmentIds()!=null) {
+				for( String equipmentid : getUserEquipmentIds() ) {
+					if( equipmentid.equals(filter)) {
+						// equipment id is equal to filter (keyword)
+						ret = true;
+						break;
+					}
+				}
+			} else if( getImages()!=null ){
+				for( ImagesMetaData image : getImages() ) {
+					if( image.getId().toString().equals(filter) ) {
+						// photo id is equal to filter (keyword)
+						ret = true;
+						break;
+					} else if( (image.getDescription() != null) && image.getDescription().contains(filter)) {
+						// photo description cotnains the filter (keyowrd)
+						ret = true;
+						break;
+					}
+				}
+			}
+		} else {
+			// no filter set; retun "true"
+			ret = true;
+		}
+		return ret;
+	}
+
 	@Override
 	public int compareTo(SportSession o) {
 		if (o == null) {
