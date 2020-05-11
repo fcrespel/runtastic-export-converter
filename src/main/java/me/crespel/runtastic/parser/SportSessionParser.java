@@ -65,7 +65,7 @@ public class SportSessionParser {
 				if (gpsDataFileJSON.exists()) {
 					sportSession.setGpsData(parseGpsData(gpsDataFileJSON));
 				}
-				// read GPS data from GPX file (the runtastic export, starting from April-2020 contain GPS data as GPX files)
+				// read GPS data from GPX file (the runtastic export contains GPS data as GPX files, starting from April-2020)
 				File gpsDataFileGPX = new File(new File(file.getParentFile(), GPS_DATA_DIR), FilenameUtils.getBaseName(file.getName()) + ".gpx");
 				if (gpsDataFileGPX.exists()) {
 					// Load GPX file
