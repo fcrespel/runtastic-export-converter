@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import com.topografix.gpx._1._1.GpxType;
+
 import me.crespel.runtastic.mapper.DelegatingSportSessionMapper;
 import me.crespel.runtastic.mapper.SportSessionMapper;
 import me.crespel.runtastic.model.ImagesMetaData;
@@ -113,6 +115,26 @@ public class ExportConverter {
 			}
 		});
 		return files.length;
+	}
+
+	public List<SportSession> convertSportSessions(File path, String format) throws FileNotFoundException, IOException {
+		File[] files = normalizeExportPath(path, SPORT_SESSIONS_DIR).listFiles(file -> file.getName().endsWith(".json"));
+		List<SportSession> sessionlist = new ArrayList<>();
+		Arrays.asList(files).parallelStream().forEach(file -> {
+			try {
+				SportSession session = parser.parseSportSession(file, true);
+				if (session.getGpsData() != null || session.getHeartRateData() != null || session.getGpx() != null) {
+					GpxType gpx = (GpxType) mapper.mapSportSession(session, format);
+					session.setGpx(gpx);
+				}
+				sessionlist.add(session);
+				System.out.print(".");
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		});
+		System.out.println(" ... finished!");
+		return sessionlist;
 	}
 
 

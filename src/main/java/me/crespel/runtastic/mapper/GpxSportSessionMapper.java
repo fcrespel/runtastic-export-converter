@@ -15,6 +15,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import com.garmin.xmlschemas.trainingcenterdatabase.v2.SportT;
 import com.topografix.gpx._1._1.BoundsType;
 import com.topografix.gpx._1._1.EmailType;
 import com.topografix.gpx._1._1.GpxType;
@@ -165,8 +166,14 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 			return "9"; // Running
 		case "3":
 			return "1"; // Biking
+		case "4":
+			return "4"; // ??
 		case "7":
 			return "Hiking"; // Hiking
+		case "19":
+			return "19"; // ??
+		case "22":
+			return "22"; // ??
 		default:
 			return ""; // Other
 		}
