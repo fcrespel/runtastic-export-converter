@@ -2,8 +2,11 @@ package me.crespel.runtastic.mapper;
 
 import java.io.File;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -18,6 +21,7 @@ import com.topografix.gpx._1._1.GpxType;
 import com.topografix.gpx._1._1.MetadataType;
 import com.topografix.gpx._1._1.ObjectFactory;
 import com.topografix.gpx._1._1.PersonType;
+import com.topografix.gpx._1._1.RteType;
 import com.topografix.gpx._1._1.TrkType;
 import com.topografix.gpx._1._1.TrksegType;
 import com.topografix.gpx._1._1.WptType;
@@ -28,6 +32,7 @@ import me.crespel.runtastic.model.SportSession;
 
 /**
  * GPX sport session mapper.
+ * 
  * @author Fabien CRESPEL (fabien@crespel.net)
  * @author Christian IMFELD (imfeldc@gmail.com)
  */
@@ -56,9 +61,9 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 		gpx.setVersion("1.1");
 		gpx.setCreator("RuntasticExportConverter");
 
-		if( session.getImages() != null ) {
+		if (session.getImages() != null) {
 			// Add the photos as "way points"
-			for( ImagesMetaData image : session.getImages()) {
+			for (ImagesMetaData image : session.getImages()) {
 				WptType wpt = factory.createWptType();
 				wpt.setLat(image.getLatitude());
 				wpt.setLon(image.getLongitude());
@@ -88,7 +93,7 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 		}
 		gpx.getTrk().add(trk);
 
-		if (session.getGpx() != null ) {
+		if (session.getGpx() != null) {
 			// handling GPX GPS data; add them to first /trk as /trkseg
 			gpx.getTrk().get(0).getTrkseg().addAll(session.getGpx().getTrk().get(0).getTrkseg());
 		}
@@ -96,7 +101,7 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 		MetadataType meta = factory.createMetadataType();
 		meta.setTime(mapDate(session.getCreatedAt()));
 		meta.setDesc(session.getNotes());
-		if( session.getUser() != null) {
+		if (session.getUser() != null) {
 			PersonType author = factory.createPersonType();
 			EmailType email = factory.createEmailType();
 			author.setName(session.getUser().getFirstName() + " " + session.getUser().getLastName());
@@ -104,37 +109,15 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 			author.setEmail(email);
 			meta.setAuthor(author);
 		}
-		meta.setKeywords("runtastic");	// add comma separated keywords
+		meta.setKeywords("runtastic"); // add comma separated keywords
 		meta.setBounds(calculateBounds(gpx));
 		gpx.setMetadata(meta);
 
 		// Add bounds as waypoints
-		WptType wpt1 = factory.createWptType();
-		wpt1.setLat(meta.getBounds().getMaxlat());
-		wpt1.setLon(meta.getBounds().getMaxlon());
-		wpt1.setName("Bounds: top-right corner");
-		wpt1.setType("bounds");
-		gpx.getWpt().add(wpt1);
-		WptType wpt2 = factory.createWptType();
-		wpt2.setLat(meta.getBounds().getMinlat());
-		wpt2.setLon(meta.getBounds().getMaxlon());
-		wpt2.setName("Bounds: down-right corner");
-		wpt2.setType("bounds");
-		gpx.getWpt().add(wpt2);
-		WptType wpt3 = factory.createWptType();
-		wpt3.setLat(meta.getBounds().getMaxlat());
-		wpt3.setLon(meta.getBounds().getMinlon());
-		wpt3.setName("Bounds: top-left corner");
-		wpt3.setType("bounds");
-		gpx.getWpt().add(wpt3);
-		WptType wpt4 = factory.createWptType();
-		wpt4.setLat(meta.getBounds().getMinlat());
-		wpt4.setLon(meta.getBounds().getMinlon());
-		wpt4.setName("Bounds: down-left corner");
-		wpt4.setType("bounds");
-		gpx.getWpt().add(wpt4);
+		gpx.getWpt().addAll(getBoundsAsWpt(meta.getBounds()));
 
-
+		// Add bounds as "rte" and "rtept"
+		gpx.getRte().add(getBoundsAsRte(meta.getBounds()));
 
 		return gpx;
 	}
@@ -230,4 +213,72 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 
 		return bounds;
 	}
+
+	private Collection<? extends WptType> getBoundsAsWpt(BoundsType bounds) {
+		List<WptType> wptlist = new ArrayList<>();
+
+		// Add bounds as waypoints
+		WptType wpt1 = factory.createWptType();
+		wpt1.setLat(bounds.getMaxlat());
+		wpt1.setLon(bounds.getMaxlon());
+		wpt1.setName("Bounds: top-right corner");
+		wpt1.setType("bounds");
+		wptlist.add(wpt1);
+		WptType wpt2 = factory.createWptType();
+		wpt2.setLat(bounds.getMinlat());
+		wpt2.setLon(bounds.getMaxlon());
+		wpt2.setName("Bounds: down-right corner");
+		wpt2.setType("bounds");
+		wptlist.add(wpt2);
+		WptType wpt3 = factory.createWptType();
+		wpt3.setLat(bounds.getMaxlat());
+		wpt3.setLon(bounds.getMinlon());
+		wpt3.setName("Bounds: top-left corner");
+		wpt3.setType("bounds");
+		wptlist.add(wpt3);
+		WptType wpt4 = factory.createWptType();
+		wpt4.setLat(bounds.getMinlat());
+		wpt4.setLon(bounds.getMinlon());
+		wpt4.setName("Bounds: down-left corner");
+		wpt4.setType("bounds");
+		wptlist.add(wpt4);
+
+		return wptlist;
+	}
+
+	private RteType getBoundsAsRte(BoundsType bounds) {
+		RteType rte = factory.createRteType();
+		rte.setName("Bounds");
+		rte.setDesc("Bounds of this sport session.");
+
+		// Add bounds as waypoints
+		WptType wpt1 = factory.createWptType();
+		wpt1.setLat(bounds.getMaxlat());
+		wpt1.setLon(bounds.getMaxlon());
+		wpt1.setName("Bounds: top-right corner");
+		wpt1.setType("bounds");
+		rte.getRtept().add(wpt1);
+		WptType wpt2 = factory.createWptType();
+		wpt2.setLat(bounds.getMinlat());
+		wpt2.setLon(bounds.getMaxlon());
+		wpt2.setName("Bounds: down-right corner");
+		wpt2.setType("bounds");
+		rte.getRtept().add(wpt2);
+		WptType wpt4 = factory.createWptType();
+		wpt4.setLat(bounds.getMinlat());
+		wpt4.setLon(bounds.getMinlon());
+		wpt4.setName("Bounds: down-left corner");
+		wpt4.setType("bounds");
+		rte.getRtept().add(wpt4);
+		WptType wpt3 = factory.createWptType();
+		wpt3.setLat(bounds.getMaxlat());
+		wpt3.setLon(bounds.getMinlon());
+		wpt3.setName("Bounds: top-left corner");
+		wpt3.setType("bounds");
+		rte.getRtept().add(wpt3);
+		rte.getRtept().add(wpt1);
+
+		return rte;
+	}
+
 }
