@@ -77,7 +77,7 @@ public class RuntasticExportConverter {
 		System.out.println("  list <export path>");
 		System.out.println("  user <export path>");
 		System.out.println("  info <export path> <activity id>");
-		System.out.println("  photo <exort path> <photo id>");
+		System.out.println("  photo <export path> <photo id>");
 		System.out.println("  convert <export path> <activity id | 'all'> <destination> ['gpx' | 'tcx']");
 		System.out.println("  help");
 	}
