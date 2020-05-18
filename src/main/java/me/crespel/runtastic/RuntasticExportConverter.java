@@ -42,7 +42,6 @@ public class RuntasticExportConverter {
 	public void run(String[] args) throws Exception {
 		String action = args.length > 0 ? args[0] : "";
 		switch (action) {
-<<<<<<< HEAD
 			case "check":
 				if (args.length < 1) {
 					throw new IllegalArgumentException("Missing argument for action 'check'");
@@ -89,42 +88,6 @@ public class RuntasticExportConverter {
 			default:
 				printUsage();
 				break;
-=======
-		case "list":
-			if (args.length < 2) {
-				throw new IllegalArgumentException("Missing argument for action 'list'");
-			}
-			doList(new File(args[1]));
-			break;
-		case "user":
-			if (args.length < 2) {
-				throw new IllegalArgumentException("Missing argument for action 'user'");
-			}
-			doUser(new File(args[1]));
-			break;
-		case "info":
-			if (args.length < 3) {
-				throw new IllegalArgumentException("Missing argument for action 'info'");
-			}
-			doInfo(new File(args[1]), args[2]);
-			break;
-		case "photo":
-			if (args.length < 3) {
-				throw new IllegalArgumentException("Missing argument for action 'photo'");
-			}
-			doPhoto(new File(args[1]), args[2]);
-			break;
-		case "convert":
-			if (args.length < 4) {
-				throw new IllegalArgumentException("Missing arguments for action 'convert'");
-			}
-			doConvert(new File(args[1]), args[2], new File(args[3]), args.length > 4 ? args[4] : null);
-			break;
-		case "help":
-		default:
-			printUsage();
-			break;
->>>>>>> f906cd3d54c3c8d6a3a76a452d95a2aa5721f373
 		}
 	}
 
