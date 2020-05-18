@@ -114,7 +114,7 @@ public class RuntasticExportConverter {
 			System.out.println("      Elevation: (+) " + session.getElevationGain() + " m , (-) " + session.getElevationLoss() + " m  /  Latitude: " + session.getLatitude() + ", Longitude: " + session.getLongitude() + "  ( http://maps.google.com/maps?q=" + session.getLatitude() + "," + session.getLongitude() + " )");
 			System.out.println("      Notes: " + session.getNotes());
 			System.out.println("      Waypoints: " + ((session.getGpsData()==null) ? "0" : session.getGpsData().size()) + " JSON points, " + ((session.getGpx()==null) ? "0" : session.getGpx().getTrk().get(0).getTrkseg().get(0).getTrkpt().size()) + " GPX points.");
-			System.out.println("      Photos:" + (session.getSessionAlbum()!=null ? session.getSessionAlbum().getPhotosIds().toString() : "none"));
+			System.out.println("      Photos: " + (session.getSessionAlbum()!=null ? session.getSessionAlbum().getPhotosIds().toString() : "none"));
 			if ( session.getImages() != null ) {
 				for ( ImagesMetaData image : session.getImages() ) {
 					System.out.println("             [" + image.getId() + ".jpg] " + sdf.format(image.getCreatedAt()) + ": " + image.getDescription() + " ( http://maps.google.com/maps?q=" + image.getLatitude() + "," + image.getLongitude() + " )" );
