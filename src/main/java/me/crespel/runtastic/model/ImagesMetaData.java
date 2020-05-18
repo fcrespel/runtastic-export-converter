@@ -22,7 +22,7 @@ public class ImagesMetaData implements Comparable<ImagesMetaData> {
     private BigDecimal latitude;
     private BigDecimal longitude;
     private String description;
-    private Integer Id;
+    private Integer id;
 
     @Override
     public int compareTo(ImagesMetaData o) {
