@@ -28,10 +28,10 @@ public class ImagesMetaData implements Comparable<ImagesMetaData> {
     public int compareTo(ImagesMetaData o) {
 		if (o == null) {
 			return 1;
-		} else if (this.Id == null) {
+		} else if (this.id == null) {
 			return -1;
 		} 
-        return (this.id.compareTo(o.id);
+        return (this.id.compareTo(o.id));
     }
 
 }

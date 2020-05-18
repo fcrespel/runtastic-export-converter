@@ -199,14 +199,8 @@ public class RuntasticExportConverter {
 	protected void doUser(File path) throws FileNotFoundException, IOException {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		User user = converter.getUser(path);
-<<<<<<< HEAD
-		System.out.println(sdf.format(user.getCreatedAt()) + " - ID: " + user.getFbUserId());
-		System.out.println("      Name: " + user.getFirstName() + " " + user.getLastName() + ",  Birthday: "
-				+ user.getBirthday() + ",  City: " + user.getCityName());
-=======
 		System.out.println(sdf.format(user.getCreatedAt()) + " - ID: " + user.getLogin() );
 		System.out.println("      Name: " + user.getFirstName() + " " + user.getLastName() + ",  Birthday: " + user.getBirthday() + ",  City: " + user.getCityName() );
->>>>>>> f906cd3d54c3c8d6a3a76a452d95a2aa5721f373
 		System.out.println("      Mail: " + user.getEmail() + " (" + user.getFbProxiedEMail() + ")");
 		System.out.println("      Gender: " + user.getGender() + ", Height: " + user.getHeight() + ", Weight: "
 				+ user.getWeight() + ", Language: " + user.getLanguage());
@@ -239,7 +233,6 @@ public class RuntasticExportConverter {
 					+ session.getLongitude() + "  ( http://maps.google.com/maps?q=" + session.getLatitude() + ","
 					+ session.getLongitude() + " )");
 			System.out.println("      Notes: " + session.getNotes());
-<<<<<<< HEAD
 			System.out
 					.println("      Waypoints: " + ((session.getGpsData() == null) ? "0" : session.getGpsData().size())
 							+ " JSON points, "
@@ -254,13 +247,6 @@ public class RuntasticExportConverter {
 					System.out.println("             [" + image.getId() + ".jpg] " + sdf.format(image.getCreatedAt())
 							+ ": " + image.getDescription() + " ( http://maps.google.com/maps?q=" + image.getLatitude()
 							+ "," + image.getLongitude() + " )");
-=======
-			System.out.println("      Waypoints: " + ((session.getGpsData()==null) ? "0" : session.getGpsData().size()) + " JSON points, " + ((session.getGpx()==null) ? "0" : session.getGpx().getTrk().get(0).getTrkseg().get(0).getTrkpt().size()) + " GPX points.");
-			System.out.println("      Photos: " + (session.getSessionAlbum()!=null ? session.getSessionAlbum().getPhotosIds().toString() : "none"));
-			if ( session.getImages() != null ) {
-				for ( ImagesMetaData image : session.getImages() ) {
-					System.out.println("             [" + image.getId() + ".jpg] " + sdf.format(image.getCreatedAt()) + ": " + image.getDescription() + " ( http://maps.google.com/maps?q=" + image.getLatitude() + "," + image.getLongitude() + " )" );
->>>>>>> f906cd3d54c3c8d6a3a76a452d95a2aa5721f373
 				}
 			}
 			if (session.getUser() != null) {

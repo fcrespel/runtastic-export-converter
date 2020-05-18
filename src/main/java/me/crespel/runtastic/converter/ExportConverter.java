@@ -72,12 +72,9 @@ public class ExportConverter {
 				for( File file : files ) {
 					try {
 						SportSessionAlbums mysessionalbum = parser.parseSportSessionAlbumsData(file);
-						for( String myphotoid : mysessionalbum.getPhotosIds() ) {
-							if( myphotoid.compareTo(photoid)==0) {
-								// Sport session id found within sport session albums
-								sessionid = mysessionalbum.getId();
-								break;
-							}
+						if (mysessionalbum.getPhotosIds().contains(photoid)) {
+							// Sport session id found within sport session albums
+							sessionid = mysessionalbum.getId();
 						}
 					} catch (IOException e) {
 						throw new RuntimeException(e);
