@@ -31,16 +31,7 @@ public class ImagesMetaData implements Comparable<ImagesMetaData> {
 		} else if (this.Id == null) {
 			return -1;
 		} 
-        if( this.Id < o.Id ){
-            return -1;
-        }
-        if( this.Id == o.Id ){
-            return 0;
-        }
-        if( this.Id > o.Id) {
-            return 1;
-        }
-        return 0;
+        return (this.id.compareTo(o.id);
     }
 
 }
