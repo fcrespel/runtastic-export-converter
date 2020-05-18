@@ -93,7 +93,7 @@ public class RuntasticExportConverter {
 	protected void doUser(File path) throws FileNotFoundException, IOException {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		User user = converter.getUser(path);
-		System.out.println(sdf.format(user.getCreatedAt()) + " - ID: " + user.getFbUserId() );
+		System.out.println(sdf.format(user.getCreatedAt()) + " - ID: " + user.getLogin() );
 		System.out.println("      Name: " + user.getFirstName() + " " + user.getLastName() + ",  Birthday: " + user.getBirthday() + ",  City: " + user.getCityName() );
 		System.out.println("      Mail: " + user.getEmail() + " (" + user.getFbProxiedEMail() + ")");
 		System.out.println("      Gender: " + user.getGender() + ", Height: " + user.getHeight() + ", Weight: " + user.getWeight() + ", Language: " + user.getLanguage() );
