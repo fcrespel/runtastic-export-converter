@@ -29,7 +29,7 @@ To run the command line tool, use the `jar-with-dependencies` JAR file in the `t
       list <export path> <filter>
       user <export path>
       info <export path> <activity id>
-      photo <exort path> <photo id>
+      photo <export path> <photo id>
       convert <export path> <activity id | 'all'> <destination> ['gpx' | 'tcx']
       help
 

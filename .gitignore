@@ -4,4 +4,5 @@
 .settings
 .vscode
 target
-myconvert.gpx
+*.gpx
+*.tcx
