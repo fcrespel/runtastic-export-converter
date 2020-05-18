@@ -1,5 +1,6 @@
 package me.crespel.runtastic.model;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -37,7 +38,7 @@ public class User {
     private String formatOfDate;
     private String formatOfTime;
     private String gender;
-    private Double height;
+    private BigDecimal height;
     private String language;
 	@JsonFormat(shape = Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss Z")
 	private Date lastSignInAt;
@@ -51,6 +52,6 @@ public class User {
     private Integer unitType;
 	@JsonFormat(shape = Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss Z")
     private Date updatedAt;
-    private Double weight;
+    private BigDecimal weight;
 
 }

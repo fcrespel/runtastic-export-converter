@@ -42,8 +42,8 @@ public class SportSessionParser {
 	public static final String ELEVATION_DATA_DIR = "Elevation-data";
 	public static final String GPS_DATA_DIR = "GPS-data";
 	public static final String HEARTRATE_DATA_DIR = "Heart-rate-data";
-	public static final String PHOTOS_META_DATA_DIR = "Photos\\Images-meta-data";
-	public static final String PHOTOS_SPORT_SESSION_ALBUMS_DIR = "Photos\\Images-meta-data\\Sport-session-albums";
+	public static final String PHOTOS_META_DATA_DIR = "Photos" + File.separator + "Images-meta-data";
+	public static final String PHOTOS_SPORT_SESSION_ALBUMS_DIR = "Photos" + File.separator + "Images-meta-data" + File.separator + "Sport-session-albums";
 	public static final String USER_DIR = "User";
 
 	protected final ObjectMapper mapper = new ObjectMapper();

@@ -136,10 +136,7 @@ public class RuntasticExportConverter {
 		Integer emptyGPXTrackSessionCount = 0;
 		for (SportSession session : fullsessions) {
 			if (session.getGpx() == null) {
-				System.out.println("      " + sdf.format(session.getStartTime()) + " - ID: " + session.getId()
-						+ ", Sport Type: " + session.getSportTypeId() + ", duration: "
-						+ Duration.ofMillis(session.getDuration()).toString() + " (" + session.getDuration() / 60000
-						+ " min), Notes: '" + session.getNotes() + "'");
+				System.out.println("      " + sdf.format(session.getStartTime()) + " - ID: " + session.getId() + ", Sport Type: " + session.getSportTypeId() + ", duration: " + Duration.ofMillis(session.getDuration()).toString() + " (" + session.getDuration() / 60000 + " min), Notes: '" + session.getNotes() + "'");
 				emptyGPXTrackSessionCount += 1;
 			}
 		}
@@ -151,10 +148,7 @@ public class RuntasticExportConverter {
 		Integer zeroDistanceSessionCount = 0;
 		for (SportSession session : fullsessions) {
 			if (session.getDistance() == 0) {
-				System.out.println("      " + sdf.format(session.getStartTime()) + " - ID: " + session.getId()
-						+ ", Sport Type: " + session.getSportTypeId() + ", duration: "
-						+ Duration.ofMillis(session.getDuration()).toString() + " (" + session.getDuration() / 60000
-						+ " min), Notes: '" + session.getNotes() + "'");
+				System.out.println("      " + sdf.format(session.getStartTime()) + " - ID: " + session.getId() + ", Sport Type: " + session.getSportTypeId() + ", duration: " + Duration.ofMillis(session.getDuration()).toString() + " (" + session.getDuration() / 60000 + " min), Notes: '" + session.getNotes() + "'");
 				zeroDistanceSessionCount += 1;
 			}
 		}
@@ -168,14 +162,10 @@ public class RuntasticExportConverter {
 
 		System.out.println("Session statistics ...");
 		System.out.println("      " + fullsessions.size() + " Sport Sessions found.");
-		System.out.println("      " + gpxSessionCount + " Sport Sessions found with GPX data assigned. "
-				+ emptyGPXTrackSessionCount + " sessions found with no GPX data");
+		System.out.println("      " + gpxSessionCount + " Sport Sessions found with GPX data assigned. " + emptyGPXTrackSessionCount + " sessions found with no GPX data");
 		System.out.println("      " + heartRateDataCount + " Sport Sessions found with heart rate data assigned.");
-		System.out.println("      " + imageSessionCount + " Sport Sessions found with totally " + imageCount
-				+ " photo(s) assigned.");
-		System.out.println("      Total Distance: " + totDistance / 1000.0 + " [km],  Minimum distance: "
-				+ minDistance / 1000.0 + " [km],  Maximum distance: " + maxDistance / 1000.0 + " [km],  "
-				+ zeroDistanceSessionCount + " sessions found with distance 'zero' found.");
+		System.out.println("      " + imageSessionCount + " Sport Sessions found with totally " + imageCount + " photo(s) assigned.");
+		System.out.println("      Total Distance: " + totDistance / 1000.0 + " [km],  Minimum distance: " + minDistance / 1000.0 + " [km],  Maximum distance: " + maxDistance / 1000.0 + " [km],  " + zeroDistanceSessionCount + " sessions found with distance 'zero' found.");
 
 	}
 
@@ -188,10 +178,7 @@ public class RuntasticExportConverter {
 		List<SportSession> sessions = converter.listSportSessions(path, false);
 		for (SportSession session : sessions) {
 			if (filter == null || session.contains(filter)) {
-				System.out.println(sdf.format(session.getStartTime()) + " - ID: " + session.getId() + ", Sport Type: "
-						+ session.getSportTypeId() + ", duration: "
-						+ Duration.ofMillis(session.getDuration()).toString() + " (" + session.getDuration() / 60000
-						+ " min), Notes: '" + session.getNotes() + "'");
+				System.out.println(sdf.format(session.getStartTime()) + " - ID: " + session.getId() + ", Sport Type: " + session.getSportTypeId() + ", duration: " + Duration.ofMillis(session.getDuration()).toString() + " (" + session.getDuration() / 60000 + " min), Notes: '" + session.getNotes() + "'");
 			}
 		}
 	}
@@ -202,11 +189,8 @@ public class RuntasticExportConverter {
 		System.out.println(sdf.format(user.getCreatedAt()) + " - ID: " + user.getLogin() );
 		System.out.println("      Name: " + user.getFirstName() + " " + user.getLastName() + ",  Birthday: " + user.getBirthday() + ",  City: " + user.getCityName() );
 		System.out.println("      Mail: " + user.getEmail() + " (" + user.getFbProxiedEMail() + ")");
-		System.out.println("      Gender: " + user.getGender() + ", Height: " + user.getHeight() + ", Weight: "
-				+ user.getWeight() + ", Language: " + user.getLanguage());
-		System.out.println("      Created At: " + sdf.format(user.getCreatedAt()) + ",  Confirmed At: "
-				+ sdf.format(user.getConfirmedAt()) + ",  Last Sign-in At: " + sdf.format(user.getLastSignInAt())
-				+ ",  Updated At: " + sdf.format(user.getUpdatedAt()));
+		System.out.println("      Gender: " + user.getGender() + ", Height: " + user.getHeight() + ", Weight: " + user.getWeight() + ", Language: " + user.getLanguage());
+		System.out.println("      Created At: " + sdf.format(user.getCreatedAt()) + ",  Confirmed At: " + sdf.format(user.getConfirmedAt()) + ",  Last Sign-in At: " + sdf.format(user.getLastSignInAt()) + ",  Updated At: " + sdf.format(user.getUpdatedAt()));
 	}
 
 	protected void doInfo(File path, String id) throws FileNotFoundException, IOException {
@@ -214,51 +198,27 @@ public class RuntasticExportConverter {
 		SportSession session = converter.getSportSession(path, id);
 		if (session != null) {
 			System.out.println(sdf.format(session.getStartTime()) + " - ID: " + session.getId());
-			System.out.println("      Sport Type: " + session.getSportTypeId() + ", Surface Type: "
-					+ session.getSurfaceId() + ", Feeling Id: " + session.getSubjectiveFeelingId());
-			System.out.println("      Duration: " + Duration.ofMillis(session.getDuration()).toString() + " ("
-					+ session.getDuration() / 60000 + " min)");
-			System.out.println(
-					"      Distance: " + (session.getDistance() != null ? session.getDistance() / 1000.0 : "n/a")
-							+ " km, Calories: " + session.getCalories());
-			System.out.println("      Avg Pace: "
-					+ (session.getDurationPerKm() != null ? session.getDurationPerKm() / 60000.0 : "n/a") + " min/km");
-			System.out.println("      Avg Speed: " + session.getAverageSpeed() + " km/h, Max Speed: "
-					+ session.getMaxSpeed() + " km/h");
-			System.out.println("      Start: " + sdf.format(session.getStartTime()) + ", End: "
-					+ sdf.format(session.getEndTime()) + ", Created: " + sdf.format(session.getCreatedAt())
-					+ ", Updated: " + sdf.format(session.getUpdatedAt()));
-			System.out.println("      Elevation: (+) " + session.getElevationGain() + " m , (-) "
-					+ session.getElevationLoss() + " m  /  Latitude: " + session.getLatitude() + ", Longitude: "
-					+ session.getLongitude() + "  ( http://maps.google.com/maps?q=" + session.getLatitude() + ","
-					+ session.getLongitude() + " )");
+			System.out.println("      Sport Type: " + session.getSportTypeId() + ", Surface Type: "	+ session.getSurfaceId() + ", Feeling Id: " + session.getSubjectiveFeelingId());
+			System.out.println("      Duration: " + Duration.ofMillis(session.getDuration()).toString() + " (" + session.getDuration() / 60000 + " min)");
+			System.out.println("      Distance: " + (session.getDistance() != null ? session.getDistance() / 1000.0 : "n/a") + " km, Calories: " + session.getCalories());
+			System.out.println("      Avg Pace: " + (session.getDurationPerKm() != null ? session.getDurationPerKm() / 60000.0 : "n/a") + " min/km");
+			System.out.println("      Avg Speed: " + session.getAverageSpeed() + " km/h, Max Speed: " + session.getMaxSpeed() + " km/h");
+			System.out.println("      Start: " + sdf.format(session.getStartTime()) + ", End: " + sdf.format(session.getEndTime()) + ", Created: " + sdf.format(session.getCreatedAt()) + ", Updated: " + sdf.format(session.getUpdatedAt()));
+			System.out.println("      Elevation: (+) " + session.getElevationGain() + " m , (-) " + session.getElevationLoss() + " m  /  Latitude: " + session.getLatitude() + ", Longitude: " + session.getLongitude() + ( session.getLatitude() != null ? "  ( http://maps.google.com/maps?q=" + session.getLatitude() + "," + session.getLongitude() + " )" : "") );
 			System.out.println("      Notes: " + session.getNotes());
-			System.out
-					.println("      Waypoints: " + ((session.getGpsData() == null) ? "0" : session.getGpsData().size())
-							+ " JSON points, "
-							+ ((session.getGpx() == null) ? "0"
-									: session.getGpx().getTrk().get(0).getTrkseg().get(0).getTrkpt().size())
-							+ " GPX points.");
-			System.out.println("      Photos:"
-					+ (session.getSessionAlbum() != null ? session.getSessionAlbum().getPhotosIds().toString()
-							: "none"));
+			System.out.println("      Waypoints: " + ((session.getGpsData() == null) ? "0" : session.getGpsData().size()) + " JSON points, " + ((session.getGpx() == null) ? "0" : session.getGpx().getTrk().get(0).getTrkseg().get(0).getTrkpt().size()) + " GPX points.");
+			System.out.println("      Photos:" + (session.getSessionAlbum() != null ? session.getSessionAlbum().getPhotosIds().toString() : "none"));
 			if (session.getImages() != null) {
 				for (ImagesMetaData image : session.getImages()) {
-					System.out.println("             [" + image.getId() + ".jpg] " + sdf.format(image.getCreatedAt())
-							+ ": " + image.getDescription() + " ( http://maps.google.com/maps?q=" + image.getLatitude()
-							+ "," + image.getLongitude() + " )");
+					System.out.println("             [" + image.getId() + ".jpg] " + sdf.format(image.getCreatedAt()) + ": " + image.getDescription() + ( image.getLatitude() != null ? " ( http://maps.google.com/maps?q=" + image.getLatitude() + "," + image.getLongitude() + " )" : "") );
 				}
 			}
 			if (session.getUser() != null) {
 				User user = session.getUser();
-				System.out.println("      Name: " + user.getFirstName() + " " + user.getLastName() + ",  Birthday: "
-						+ user.getBirthday() + ",  City: " + user.getCityName());
+				System.out.println("      Name: " + user.getFirstName() + " " + user.getLastName() + ",  Birthday: " + user.getBirthday() + ",  City: " + user.getCityName());
 				System.out.println("      Mail: " + user.getEmail() + " (" + user.getFbProxiedEMail() + ")");
-				System.out.println("      Gender: " + user.getGender() + ", Height: " + user.getHeight() + ", Weight: "
-						+ user.getWeight() + ", Language: " + user.getLanguage());
-				System.out.println("      Created At: " + sdf.format(user.getCreatedAt()) + ",  Confirmed At: "
-						+ sdf.format(user.getConfirmedAt()) + ",  Last Sign-in At: "
-						+ sdf.format(user.getLastSignInAt()) + ",  Updated At: " + sdf.format(user.getUpdatedAt()));
+				System.out.println("      Gender: " + user.getGender() + ", Height: " + user.getHeight() + ", Weight: " + user.getWeight() + ", Language: " + user.getLanguage());
+				System.out.println("      Created At: " + sdf.format(user.getCreatedAt()) + ",  Confirmed At: " + sdf.format(user.getConfirmedAt()) + ",  Last Sign-in At: " + sdf.format(user.getLastSignInAt()) + ",  Updated At: " + sdf.format(user.getUpdatedAt()));
 			}
 		}
 	}
@@ -271,9 +231,8 @@ public class RuntasticExportConverter {
 				if (image.getId() == Integer.parseInt(id)) {
 					doInfo(path, session.getId());
 					System.out.println(sdf.format(session.getStartTime()) + " - ID: " + session.getId());
-					System.out.println("             [" + image.getId() + ".jpg] " + sdf.format(image.getCreatedAt())
-							+ ": " + image.getDescription() + " ( http://maps.google.com/maps?q=" + image.getLatitude()
-							+ "," + image.getLongitude() + " )");
+					System.out.println("             [" + image.getId() + ".jpg] " + sdf.format(image.getCreatedAt()) + ": " + image.getDescription() );
+					if( image.getLatitude() != null ) System.out.println("             ( http://maps.google.com/maps?q=" + image.getLatitude() + "," + image.getLongitude() + " )");
 				}
 			}
 		}
@@ -284,8 +243,7 @@ public class RuntasticExportConverter {
 			long startTime = System.currentTimeMillis();
 			int count = converter.convertSportSessions(path, dest, format);
 			long endTime = System.currentTimeMillis();
-			System.out.println(count + " activities successfully written to '" + dest + "' in "
-					+ (endTime - startTime) / 1000 + " seconds");
+			System.out.println(count + " activities successfully written to '" + dest + "' in " + (endTime - startTime) / 1000 + " seconds");
 		} else {
 			converter.convertSportSession(path, id, dest, format);
 			System.out.println("Activity successfully written to '" + dest + "'");
@@ -299,8 +257,7 @@ public class RuntasticExportConverter {
 		doOverlap(sessions);
 		displayOverlapSummary(sessions, true);
 		long endTime = System.currentTimeMillis();
-		System.out.println(sessions.size() + " activities successfully processed, in " + (endTime - startTime) / 1000
-				+ " seconds");
+		System.out.println(sessions.size() + " activities successfully processed, in " + (endTime - startTime) / 1000 + " seconds");
 	}
 
 	// Loop through all sport session and add "overlapping" session to each sport

@@ -98,6 +98,21 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 			gpx.getTrk().get(0).getTrkseg().addAll(session.getGpx().getTrk().get(0).getTrkseg());
 		}
 
+		gpx.setMetadata(mapMetadata(session));
+
+		// Calculate bounds and set them in meta data
+		gpx.getMetadata().setBounds(calculateBounds(gpx));
+
+		// Add bounds as waypoints
+		gpx.getWpt().addAll(getBoundsAsWpt(gpx.getMetadata().getBounds()));
+
+		// Add bounds as "rte" and "rtept"
+		gpx.getRte().add(getBoundsAsRte(gpx.getMetadata().getBounds()));
+
+		return gpx;
+	}
+
+	private MetadataType mapMetadata(SportSession session) {
 		MetadataType meta = factory.createMetadataType();
 		meta.setTime(mapDate(session.getCreatedAt()));
 		meta.setDesc(session.getNotes());
@@ -110,16 +125,7 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 			meta.setAuthor(author);
 		}
 		meta.setKeywords("runtastic"); // add comma separated keywords
-		meta.setBounds(calculateBounds(gpx));
-		gpx.setMetadata(meta);
-
-		// Add bounds as waypoints
-		gpx.getWpt().addAll(getBoundsAsWpt(meta.getBounds()));
-
-		// Add bounds as "rte" and "rtept"
-		gpx.getRte().add(getBoundsAsRte(meta.getBounds()));
-
-		return gpx;
+		return meta;
 	}
 
 	@Override
@@ -166,7 +172,7 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 		case "3":
 			return "1"; // Biking
 		case "4":
-			return "4"; // ??
+			return "4"; // Hiking
 		case "7":
 			return "Hiking"; // Hiking
 		case "19":
