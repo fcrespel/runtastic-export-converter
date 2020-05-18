@@ -15,7 +15,6 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import com.garmin.xmlschemas.trainingcenterdatabase.v2.SportT;
 import com.topografix.gpx._1._1.BoundsType;
 import com.topografix.gpx._1._1.EmailType;
 import com.topografix.gpx._1._1.GpxType;

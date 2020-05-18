@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-
+import com.topografix.gpx._1._1.BoundsType;
 import com.topografix.gpx._1._1.GpxType;
 
 import lombok.Data;
@@ -73,6 +73,14 @@ public class SportSession implements Comparable<SportSession> {
 
 	@JsonIgnore
 	private List<ImagesMetaData> images;
+
+	@JsonIgnore
+	private List<SportSession> overlapSessions;
+
+	@JsonIgnore
+	private BoundsType innerBound;
+	@JsonIgnore
+	private BoundsType outerBound;
 
 	@JsonIgnore
 	private User user;
