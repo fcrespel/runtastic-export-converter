@@ -93,11 +93,11 @@ public class RuntasticExportConverter {
 
 	protected void printUsage() {
 		System.out.println("Expected arguments:");
-		System.out.println("  check <export path>");
-		System.out.println("  list <export path> <filter>");
-		System.out.println("  user <export path>");
-		System.out.println("  info <export path> <activity id>");
-		System.out.println("  photo <export path> <photo id>");
+		System.out.println("  check   <export path>");
+		System.out.println("  list    <export path> <filter>");
+		System.out.println("  user    <export path>");
+		System.out.println("  info    <export path> <activity id>");
+		System.out.println("  photo   <export path> <photo id>");
 		System.out.println("  convert <export path> <activity id | 'all'> <destination> ['gpx' | 'tcx']");
 		System.out.println("  overlap <export path> ");
 		System.out.println("  help");
@@ -204,7 +204,7 @@ public class RuntasticExportConverter {
 			System.out.println("      Avg Pace: " + (session.getDurationPerKm() != null ? session.getDurationPerKm() / 60000.0 : "n/a") + " min/km");
 			System.out.println("      Avg Speed: " + session.getAverageSpeed() + " km/h, Max Speed: " + session.getMaxSpeed() + " km/h");
 			System.out.println("      Start: " + sdf.format(session.getStartTime()) + ", End: " + sdf.format(session.getEndTime()) + ", Created: " + sdf.format(session.getCreatedAt()) + ", Updated: " + sdf.format(session.getUpdatedAt()));
-			System.out.println("      Elevation: (+) " + session.getElevationGain() + " m , (-) " + session.getElevationLoss() + " m  /  Latitude: " + session.getLatitude() + ", Longitude: " + session.getLongitude() + ( session.getLatitude() != null ? "  ( http://maps.google.com/maps?q=" + session.getLatitude() + "," + session.getLongitude() + " )" : "") );
+			System.out.println("      Elevation: (+) " + session.getElevationGain() + " m , (-) " + session.getElevationLoss() + " m  /  " + ( session.getLatitude() != null ? "Latitude: " + session.getLatitude() + ", Longitude: " + session.getLongitude() + "  ( http://maps.google.com/maps?q=" + session.getLatitude() + "," + session.getLongitude() + " )" : "No GPS information available.") );
 			System.out.println("      Notes: " + session.getNotes());
 			System.out.println("      Waypoints: " + ((session.getGpsData() == null) ? "0" : session.getGpsData().size()) + " JSON points, " + ((session.getGpx() == null) ? "0" : session.getGpx().getTrk().get(0).getTrkseg().get(0).getTrkpt().size()) + " GPX points.");
 			System.out.println("      Photos:" + (session.getSessionAlbum() != null ? session.getSessionAlbum().getPhotosIds().toString() : "none"));
@@ -255,21 +255,26 @@ public class RuntasticExportConverter {
 		System.out.println("Load full list of sport session (inclusive all sub-data), this requires some time ...");
 		List<SportSession> sessions = converter.convertSportSessions(path, "gpx");
 		doOverlap(sessions);
-		displayOverlapSummary(sessions, true);
+		displayOverlapSummary(sessions, false);
+
+		for( SportSession session : sessions) {
+			List<SportSession> overlapsessions = session.getOverlapSessions();
+			if( (overlapsessions!=null) && (overlapsessions.size() > 0) ) {
+				// converter.convertSportSession(session, "gpx", "c:\\temp");
+			}
+		}
+
 		long endTime = System.currentTimeMillis();
 		System.out.println(sessions.size() + " activities successfully processed, in " + (endTime - startTime) / 1000 + " seconds");
 	}
 
-	// Loop through all sport session and add "overlapping" session to each sport
-	// session
-	private void doOverlap(List<SportSession> sessions) throws FileNotFoundException, IOException {
+	// Loop through all sport session and add "overlapping" session to each sport session
+	private void doOverlap(List<SportSession> sessions) {
 		// (1) search per session for all overlapping sessions
 		// NOTE: This can result in different results; e.g.
 		// - Session A, overlaps with B and C, but
-		// - Session D, overlaps only with B and C (this because B & C are in range of
-		// D, but not of A)
-		// but expected is that all mention sessions above are calculated as
-		// "overlapping"
+		// - Session D, overlaps only with B and C (this because B & C are in range of D, but not of A)
+		// but expected is that all mention sessions above are calculated as "overlapping"
 		// This circumstance will be "normalized" in a second step.
 		for (SportSession session : sessions) {
 			if (session.getGpx() != null && session.getGpx().getMetadata() != null

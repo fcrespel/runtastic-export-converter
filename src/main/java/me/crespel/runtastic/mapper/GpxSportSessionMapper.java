@@ -75,10 +75,10 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 			}
 		}
 
-		TrkType trk = factory.createTrkType();
-		trk.setName(session.getNotes());
-		trk.setType(mapSport(session.getSportTypeId()));
 		if (session.getGpsData() != null) {
+			TrkType trk = factory.createTrkType();
+			trk.setName(session.getNotes());
+			trk.setType(mapSport(session.getSportTypeId()));
 			// handling JSON GPS data
 			TrksegType trkseg = factory.createTrksegType();
 			for (GpsData gps : session.getGpsData()) {
@@ -90,12 +90,16 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 				trkseg.getTrkpt().add(wpt);
 			}
 			trk.getTrkseg().add(trkseg);
+			gpx.getTrk().add(trk);
 		}
-		gpx.getTrk().add(trk);
 
 		if (session.getGpx() != null) {
-			// handling GPX GPS data; add them to first /trk as /trkseg
-			gpx.getTrk().get(0).getTrkseg().addAll(session.getGpx().getTrk().get(0).getTrkseg());
+			TrkType trk = factory.createTrkType();
+			trk.setName(session.getNotes());
+			trk.setType(mapSport(session.getSportTypeId()));
+			// handling GPX GPS data
+			trk.getTrkseg().addAll(session.getGpx().getTrk().get(0).getTrkseg());
+			gpx.getTrk().add(trk);
 		}
 
 		gpx.setMetadata(mapMetadata(session));

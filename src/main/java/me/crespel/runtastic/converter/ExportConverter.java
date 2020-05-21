@@ -88,6 +88,10 @@ public class ExportConverter {
 
 	public void convertSportSession(File path, String id, File dest, String format) throws FileNotFoundException, IOException {
 		SportSession session = parser.parseSportSession(new File(normalizeExportPath(path, SPORT_SESSIONS_DIR), id + ".json"), true);
+		convertSportSession(session, dest, format);
+	}
+
+	public void convertSportSession(SportSession session, File dest, String format) throws FileNotFoundException, IOException {
 		if (dest.isDirectory()) {
 			dest = new File(dest, buildFileName(session, format));
 		}
