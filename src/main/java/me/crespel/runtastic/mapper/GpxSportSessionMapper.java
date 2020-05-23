@@ -108,10 +108,19 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 		gpx.getMetadata().setBounds(calculateBounds(gpx));
 
 		// Add bounds as waypoints
-		gpx.getWpt().addAll(getBoundsAsWpt(gpx.getMetadata().getBounds()));
+		gpx.getWpt().addAll(getBoundsAsWpt(gpx.getMetadata().getBounds(),"Session bounds"));
 
 		// Add bounds as "rte" and "rtept"
-		gpx.getRte().add(getBoundsAsRte(gpx.getMetadata().getBounds()));
+		gpx.getRte().add(getBoundsAsRte(gpx.getMetadata().getBounds(),"Session bounds"));
+
+		if( session.getInnerBound() != null ) {
+			// Add "inner bounds" as "rte" and "rtept"
+			gpx.getRte().add(getBoundsAsRte(session.getInnerBound(),"Inner bounds of all overlapping sessions"));
+		}
+		if( session.getOuterBound() != null ) {
+			// Add "outer bounds" as "rte" and "rtept"
+			gpx.getRte().add(getBoundsAsRte(session.getOuterBound(),"Outer bounds of all overlapping sessions"));
+		}
 
 		return gpx;
 	}
@@ -230,66 +239,66 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 		return bounds;
 	}
 
-	private Collection<? extends WptType> getBoundsAsWpt(BoundsType bounds) {
+	private Collection<? extends WptType> getBoundsAsWpt(BoundsType bounds, String boundName) {
 		List<WptType> wptlist = new ArrayList<>();
 
 		// Add bounds as waypoints
 		WptType wpt1 = factory.createWptType();
 		wpt1.setLat(bounds.getMaxlat());
 		wpt1.setLon(bounds.getMaxlon());
-		wpt1.setName("Bounds: top-right corner");
+		wpt1.setName(boundName + ": top-right corner");
 		wpt1.setType("bounds");
 		wptlist.add(wpt1);
 		WptType wpt2 = factory.createWptType();
 		wpt2.setLat(bounds.getMinlat());
 		wpt2.setLon(bounds.getMaxlon());
-		wpt2.setName("Bounds: down-right corner");
+		wpt2.setName(boundName + ": down-right corner");
 		wpt2.setType("bounds");
 		wptlist.add(wpt2);
 		WptType wpt3 = factory.createWptType();
 		wpt3.setLat(bounds.getMaxlat());
 		wpt3.setLon(bounds.getMinlon());
-		wpt3.setName("Bounds: top-left corner");
+		wpt3.setName(boundName + ": top-left corner");
 		wpt3.setType("bounds");
 		wptlist.add(wpt3);
 		WptType wpt4 = factory.createWptType();
 		wpt4.setLat(bounds.getMinlat());
 		wpt4.setLon(bounds.getMinlon());
-		wpt4.setName("Bounds: down-left corner");
+		wpt4.setName(boundName + ": down-left corner");
 		wpt4.setType("bounds");
 		wptlist.add(wpt4);
 
 		return wptlist;
 	}
 
-	private RteType getBoundsAsRte(BoundsType bounds) {
+	private RteType getBoundsAsRte(BoundsType bounds, String boundName) {
 		RteType rte = factory.createRteType();
-		rte.setName("Bounds");
-		rte.setDesc("Bounds of this sport session.");
+		rte.setName(boundName);
+		rte.setDesc(boundName + ": Bounds of this sport session.");
 
 		// Add bounds as waypoints
 		WptType wpt1 = factory.createWptType();
 		wpt1.setLat(bounds.getMaxlat());
 		wpt1.setLon(bounds.getMaxlon());
-		wpt1.setName("Bounds: top-right corner");
+		wpt1.setName(boundName + ": top-right corner");
 		wpt1.setType("bounds");
 		rte.getRtept().add(wpt1);
 		WptType wpt2 = factory.createWptType();
 		wpt2.setLat(bounds.getMinlat());
 		wpt2.setLon(bounds.getMaxlon());
-		wpt2.setName("Bounds: down-right corner");
+		wpt2.setName(boundName + ": down-right corner");
 		wpt2.setType("bounds");
 		rte.getRtept().add(wpt2);
 		WptType wpt4 = factory.createWptType();
 		wpt4.setLat(bounds.getMinlat());
 		wpt4.setLon(bounds.getMinlon());
-		wpt4.setName("Bounds: down-left corner");
+		wpt4.setName(boundName + ": down-left corner");
 		wpt4.setType("bounds");
 		rte.getRtept().add(wpt4);
 		WptType wpt3 = factory.createWptType();
 		wpt3.setLat(bounds.getMaxlat());
 		wpt3.setLon(bounds.getMinlon());
-		wpt3.setName("Bounds: top-left corner");
+		wpt3.setName(boundName + ": top-left corner");
 		wpt3.setType("bounds");
 		rte.getRtept().add(wpt3);
 		rte.getRtept().add(wpt1);

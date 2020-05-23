@@ -8,7 +8,7 @@ import me.crespel.runtastic.model.SportSession;
 import me.crespel.runtastic.parser.SportSessionParser;
 
 /**
- * TcxSportSessionMapper tests.
+ * SportSessionMapper tests.
  * @author Fabien CRESPEL (fabien@crespel.net)
  */
 public class TestSportSessionMapper {

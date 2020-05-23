@@ -86,38 +86,6 @@ public class ExportConverter {
 		return getSportSession(path, sessionid);
 	}
 
-	public void convertSportSession(File path, String id, File dest, String format) throws FileNotFoundException, IOException {
-		SportSession session = parser.parseSportSession(new File(normalizeExportPath(path, SPORT_SESSIONS_DIR), id + ".json"), true);
-		convertSportSession(session, dest, format);
-	}
-
-	public void convertSportSession(SportSession session, File dest, String format) throws FileNotFoundException, IOException {
-		if (dest.isDirectory()) {
-			dest = new File(dest, buildFileName(session, format));
-		}
-		mapper.mapSportSession(session, format, dest);
-	}
-
-	public int convertSportSessions(File path, File dest, String format) throws FileNotFoundException, IOException {
-		if (dest.exists() && !dest.isDirectory()) {
-			throw new IllegalArgumentException("Destination '" + dest + "' is not a valid directory");
-		}
-		dest.mkdirs();
-		File[] files = normalizeExportPath(path, SPORT_SESSIONS_DIR).listFiles(file -> file.getName().endsWith(".json"));
-		Arrays.asList(files).parallelStream().forEach(file -> {
-			try {
-				SportSession session = parser.parseSportSession(file, true);
-				if (session.getGpsData() != null || session.getHeartRateData() != null || session.getGpx() != null) {
-					File destFile = new File(dest, buildFileName(session, format));
-					mapper.mapSportSession(session, format, destFile);
-				}
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		});
-		return files.length;
-	}
-
 	public List<SportSession> convertSportSessions(File path, String format) throws FileNotFoundException, IOException {
 		File[] files = normalizeExportPath(path, SPORT_SESSIONS_DIR).listFiles(file -> file.getName().endsWith(".json"));
 		List<SportSession> sessionlist = new ArrayList<>();
@@ -136,6 +104,38 @@ public class ExportConverter {
 		});
 		System.out.println(" ... finished!");
 		return sessionlist;
+	}
+
+	public void exportSportSession(SportSession session, File dest, String format) throws FileNotFoundException, IOException {
+		if (dest.isDirectory()) {
+			dest = new File(dest, buildFileName(session, format));
+		}
+		mapper.mapSportSession(session, format, dest);
+	}
+
+	public void exportSportSession(File path, String id, File dest, String format) throws FileNotFoundException, IOException {
+		SportSession session = parser.parseSportSession(new File(normalizeExportPath(path, SPORT_SESSIONS_DIR), id + ".json"), true);
+		exportSportSession(session, dest, format);
+	}
+
+	public int exportSportSessions(File path, File dest, String format) throws FileNotFoundException, IOException {
+		if (dest.exists() && !dest.isDirectory()) {
+			throw new IllegalArgumentException("Destination '" + dest + "' is not a valid directory");
+		}
+		dest.mkdirs();
+		File[] files = normalizeExportPath(path, SPORT_SESSIONS_DIR).listFiles(file -> file.getName().endsWith(".json"));
+		Arrays.asList(files).parallelStream().forEach(file -> {
+			try {
+				SportSession session = parser.parseSportSession(file, true);
+				if (session.getGpsData() != null || session.getHeartRateData() != null || session.getGpx() != null) {
+					File destFile = new File(dest, buildFileName(session, format));
+					mapper.mapSportSession(session, format, destFile);
+				}
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		});
+		return files.length;
 	}
 
 
