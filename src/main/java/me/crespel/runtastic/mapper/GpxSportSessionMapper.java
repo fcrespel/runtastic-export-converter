@@ -61,6 +61,38 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 		gpx.setVersion("1.1");
 		gpx.setCreator("RuntasticExportConverter");
 
+		mapMetadata(session, gpx);
+
+		mapImages(session, gpx);
+
+		mapGPSdata(session, gpx);
+
+		mapGPXdata(session, gpx);
+
+		mapBoundsdata(session, gpx);
+
+		mapOverlapSessions(session, gpx);
+
+		return gpx;
+	}
+
+	private void mapMetadata(SportSession session, GpxType gpx) {
+		MetadataType meta = factory.createMetadataType();
+		meta.setTime(mapDate(session.getCreatedAt()));
+		meta.setDesc(session.getNotes());
+		if (session.getUser() != null) {
+			PersonType author = factory.createPersonType();
+			EmailType email = factory.createEmailType();
+			author.setName(session.getUser().getFirstName() + " " + session.getUser().getLastName());
+			email.setId(session.getUser().getEmail());
+			author.setEmail(email);
+			meta.setAuthor(author);
+		}
+		meta.setKeywords("runtastic"); // add comma separated keywords
+		gpx.setMetadata(meta);
+	}
+
+	private void mapImages(SportSession session, GpxType gpx) {
 		if (session.getImages() != null) {
 			// Add the photos as "way points"
 			for (ImagesMetaData image : session.getImages()) {
@@ -74,7 +106,9 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 				gpx.getWpt().add(wpt);
 			}
 		}
+	}
 
+	private void mapGPSdata(SportSession session, GpxType gpx) {
 		if (session.getGpsData() != null) {
 			TrkType trk = factory.createTrkType();
 			trk.setName(session.getNotes());
@@ -92,18 +126,21 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 			trk.getTrkseg().add(trkseg);
 			gpx.getTrk().add(trk);
 		}
+	}
 
+	private void mapGPXdata(SportSession session, GpxType gpx) {
 		if (session.getGpx() != null) {
 			TrkType trk = factory.createTrkType();
-			trk.setName(session.getNotes());
+			trk.setName(session.getNotes() + " (" + session.getId() + ")");
+			trk.setDesc(session.getNotes() + " (" + session.getId() + ")");
 			trk.setType(mapSport(session.getSportTypeId()));
 			// handling GPX GPS data
 			trk.getTrkseg().addAll(session.getGpx().getTrk().get(0).getTrkseg());
 			gpx.getTrk().add(trk);
 		}
+	}
 
-		gpx.setMetadata(mapMetadata(session));
-
+	private void mapBoundsdata(SportSession session, GpxType gpx) {
 		// Calculate bounds and set them in meta data
 		gpx.getMetadata().setBounds(calculateBounds(gpx));
 
@@ -121,24 +158,36 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 			// Add "outer bounds" as "rte" and "rtept"
 			gpx.getRte().add(getBoundsAsRte(session.getOuterBound(),"Outer bounds of all overlapping sessions"));
 		}
-
-		return gpx;
 	}
 
-	private MetadataType mapMetadata(SportSession session) {
-		MetadataType meta = factory.createMetadataType();
-		meta.setTime(mapDate(session.getCreatedAt()));
-		meta.setDesc(session.getNotes());
-		if (session.getUser() != null) {
-			PersonType author = factory.createPersonType();
-			EmailType email = factory.createEmailType();
-			author.setName(session.getUser().getFirstName() + " " + session.getUser().getLastName());
-			email.setId(session.getUser().getEmail());
-			author.setEmail(email);
-			meta.setAuthor(author);
+	private void mapOverlapSessions(SportSession session, GpxType gpx) {
+		if( session.getOverlapSessions() != null) {
+			Integer overlapSessionCount=0;
+			for( SportSession overlapSession : session.getOverlapSessions()) {
+				overlapSessionCount+=1;
+
+				if (overlapSession.getImages() != null) {
+					// Add the photos as "way points"
+					for (ImagesMetaData image : overlapSession.getImages()) {
+						WptType wpt = factory.createWptType();
+						wpt.setLat(image.getLatitude());
+						wpt.setLon(image.getLongitude());
+						wpt.setName("Overlap Session " + overlapSessionCount + ": " + "Photo: " + image.getId() + ".jpg");
+						wpt.setDesc("Overlap Session " + overlapSessionCount + ": " + image.getDescription());
+						wpt.setType("photo");
+						wpt.setTime(mapDate(image.getCreatedAt()));
+						gpx.getWpt().add(wpt);
+					}
+				}
+		
+				TrkType trk = factory.createTrkType();
+				trk.setName("Overlap Session " + overlapSessionCount + ": " + overlapSession.getId());
+				trk.setDesc("Overlap Session " + overlapSessionCount + ": " + overlapSession.getNotes());
+				trk.setType(mapSport(overlapSession.getSportTypeId()));
+				trk.getTrkseg().addAll(overlapSession.getGpx().getTrk().get(0).getTrkseg());
+				gpx.getTrk().add(trk);
+			}			
 		}
-		meta.setKeywords("runtastic"); // add comma separated keywords
-		return meta;
 	}
 
 	@Override

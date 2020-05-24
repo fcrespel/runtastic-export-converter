@@ -24,7 +24,7 @@ import me.crespel.runtastic.model.User;
  */
 public class RuntasticExportConverter {
 
-	private BigDecimal diff = new BigDecimal(0.001); // max. allowed "deviation" between bounds of sessions
+	private BigDecimal diff = new BigDecimal(0.0005); // max. allowed "deviation" between bounds of sessions
 
 	protected final ExportConverter converter = new ExportConverter();
 
@@ -43,7 +43,7 @@ public class RuntasticExportConverter {
 		String action = args.length > 0 ? args[0] : "";
 		switch (action) {
 			case "check":
-				if (args.length < 1) {
+				if (args.length < 2) {
 					throw new IllegalArgumentException("Missing argument for action 'check'");
 				}
 				doCheck(new File(args[1]));
@@ -55,7 +55,7 @@ public class RuntasticExportConverter {
 				doListWithFilter(new File(args[1]), args.length > 2 ? args[2] : null);
 				break;
 			case "user":
-				if (args.length < 1) {
+				if (args.length < 2) {
 					throw new IllegalArgumentException("Missing argument for action 'user'");
 				}
 				doUser(new File(args[1]));
@@ -79,10 +79,10 @@ public class RuntasticExportConverter {
 				doConvert(new File(args[1]), args[2], new File(args[3]), args.length > 4 ? args[4] : null);
 				break;
 			case "overlap":
-				if (args.length < 1) {
+				if (args.length < 2) {
 					throw new IllegalArgumentException("Missing argument for action 'overlap'");
 				}
-				doOverlap(new File(args[1]));
+				doOverlap(new File(args[1]), args.length > 2 ? new File(args[2]) : null, args.length > 3 ? args[3] : "gpx");
 				break;
 			case "help":
 			default:
@@ -98,8 +98,8 @@ public class RuntasticExportConverter {
 		System.out.println("  user    <export path>");
 		System.out.println("  info    <export path> <activity id>");
 		System.out.println("  photo   <export path> <photo id>");
-		System.out.println("  convert <export path> <activity id | 'all'> <destination> ['gpx' | 'tcx']");
-		System.out.println("  overlap <export path> ");
+		System.out.println("  convert <export path> <activity id | 'all'> <destination path> ['gpx' | 'tcx']");
+		System.out.println("  overlap <export path> <destination path> ['gpx' | 'tcx']");
 		System.out.println("  help");
 	}
 
@@ -225,17 +225,17 @@ public class RuntasticExportConverter {
 		}
 	}
 
-	private void doOverlap(File path) throws FileNotFoundException, IOException {
+	private void doOverlap(File path, File dest, String format) throws FileNotFoundException, IOException {
 		long startTime = System.currentTimeMillis();
 		System.out.println("Load full list of sport session (inclusive all sub-data), this requires some time ...");
-		List<SportSession> sessions = converter.convertSportSessions(path, "gpx");
+		List<SportSession> sessions = converter.convertSportSessions(path, format);
 		doOverlap(sessions);
 		displayOverlapSummary(sessions, false);
 
 		for( SportSession session : sessions) {
 			List<SportSession> overlapsessions = session.getOverlapSessions();
-			if( (overlapsessions!=null) && (overlapsessions.size() > 0) ) {
-				converter.exportSportSession(session, new File("c:\\temp"), "gpx");
+			if( (dest!=null) && (overlapsessions!=null) && (overlapsessions.size() > 0) ) {
+				converter.exportSportSession(session, dest, format);
 			}
 		}
 
