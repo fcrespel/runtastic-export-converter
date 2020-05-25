@@ -3,13 +3,14 @@ package me.crespel.runtastic.converter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import com.topografix.gpx._1._1.GpxType;
+import com.topografix.gpx._1._1.BoundsType;
 
 import me.crespel.runtastic.mapper.DelegatingSportSessionMapper;
 import me.crespel.runtastic.mapper.SportSessionMapper;
@@ -25,6 +26,8 @@ import me.crespel.runtastic.parser.SportSessionParser;
  * @author Christian IMFELD (imfeldc@gmail.com)
  */
 public class ExportConverter {
+
+	public BigDecimal diff = new BigDecimal(0.0005); // max. allowed "deviation" between bounds of sessions
 
 	public static final String SPORT_SESSIONS_DIR = "Sport-sessions";
 	public static final String PHOTOS_DIR = "Photos";
@@ -83,6 +86,10 @@ public class ExportConverter {
 			}
 		}
 
+		if( sessionid == null) {
+			throw new FileNotFoundException("Sport Session file not found for photo id = '" + photoid + "'");
+		}
+
 		return getSportSession(path, sessionid);
 	}
 
@@ -93,16 +100,13 @@ public class ExportConverter {
 			try {
 				SportSession session = parser.parseSportSession(file, true);
 				if (session.getGpsData() != null || session.getHeartRateData() != null || session.getGpx() != null) {
-					GpxType gpx = (GpxType) mapper.mapSportSession(session, format);
-					session.setGpx(gpx);
+					mapper.mapSportSession(session, format);
 				}
 				sessionlist.add(session);
-				System.out.print(".");
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
 		});
-		System.out.println(" ... finished!");
 		return sessionlist;
 	}
 
@@ -136,6 +140,157 @@ public class ExportConverter {
 			}
 		});
 		return files.length;
+	}
+
+
+	// Loop through all sport session and add "overlapping" session to each sport session
+	public void doOverlap(List<SportSession> sessions) {
+		// (1) search per session for all overlapping sessions
+		// NOTE: This can result in different results; e.g.
+		// - Session A, overlaps with B and C, but
+		// - Session D, overlaps only with B and C (this because B & C are in range of D, but not of A)
+		// but expected is that all mention sessions above are calculated as "overlapping"
+		// This circumstance will be "normalized" in a second step.
+		for (SportSession session : sessions) {
+			if (session.getGpx() != null && session.getGpx().getMetadata() != null
+					&& session.getGpx().getMetadata().getBounds() != null) {
+				List<SportSession> overlapSessions = new ArrayList<>();
+				for (SportSession session2 : sessions) {
+					if (!session.getId().equals(session2.getId())) {
+						if ((session2.getGpx() != null && session2.getGpx().getMetadata() != null
+								&& session2.getGpx().getMetadata().getBounds() != null)) {
+							BoundsType bounds = session.getGpx().getMetadata().getBounds();
+							BoundsType bounds2 = session2.getGpx().getMetadata().getBounds();
+							BigDecimal diffMaxlat = bounds.getMaxlat().subtract(bounds2.getMaxlat()).abs();
+							BigDecimal diffMaxlon = bounds.getMaxlon().subtract(bounds2.getMaxlon()).abs();
+							BigDecimal diffMinlat = bounds.getMinlat().subtract(bounds2.getMinlat()).abs();
+							BigDecimal diffMinlon = bounds.getMinlon().subtract(bounds2.getMinlon()).abs();
+							if ((diffMaxlat.compareTo(diff) < 0) && (diffMaxlon.compareTo(diff) < 0)
+									&& (diffMinlat.compareTo(diff) < 0) && (diffMinlon.compareTo(diff) < 0)) {
+								// overlapping sport session found
+								overlapSessions.add(session2);
+							}
+						}
+					}
+				}
+				if( overlapSessions.size()>0) {
+					session.setOverlapSessions(overlapSessions);
+				}
+			}
+		}
+		// (2) Normalize overlapping sport sessions
+		for (SportSession session : sessions) {
+			if( session.getOverlapSessions() != null ) {
+				List<SportSession> normalizedOverlapSessions = new ArrayList<>();
+				for (SportSession overlapSession : session.getOverlapSessions()) {
+					addOverlapSessions(normalizedOverlapSessions, overlapSession);
+				}
+				session.setOverlapSessions(normalizedOverlapSessions);
+			}
+		}
+		// (3) Calculate inner and outer bound (of normalized overlapping sessions)
+		for (SportSession session : sessions) {
+			calculateInnerAndOuterBound(session);
+		}
+	}
+
+	public void calculateInnerAndOuterBound(SportSession session) {
+		if( session.getOverlapSessions() != null ) {
+			BoundsType innerBounds = null;
+			BoundsType outerBounds = null;
+			for (SportSession overlapSession : session.getOverlapSessions()) {
+				BoundsType sessionBounds = overlapSession.getGpx().getMetadata().getBounds();;
+				if( (innerBounds == null) && (outerBounds == null) ) {
+					// init bounds with "any" existing bounds from sessions
+					innerBounds = new BoundsType();
+					innerBounds.setMaxlat(sessionBounds.getMaxlat());
+					innerBounds.setMinlat(sessionBounds.getMinlat());
+					innerBounds.setMaxlon(sessionBounds.getMaxlon());
+					innerBounds.setMinlon(sessionBounds.getMinlon());
+					outerBounds = new BoundsType();
+					outerBounds.setMaxlat(sessionBounds.getMaxlat());
+					outerBounds.setMinlat(sessionBounds.getMinlat());
+					outerBounds.setMaxlon(sessionBounds.getMaxlon());
+					outerBounds.setMinlon(sessionBounds.getMinlon());
+				} else {
+					// calculate "left" side of inner bounds ...
+					innerBounds.setMinlon(sessionBounds.getMinlon().max(innerBounds.getMinlon()));
+					// calculate "right" side of inner bounds ...
+					innerBounds.setMaxlon(sessionBounds.getMaxlon().min(innerBounds.getMaxlon()));
+					// caluclate "top" side of inner bounds ...
+					innerBounds.setMaxlat(sessionBounds.getMaxlat().min(innerBounds.getMaxlat()));
+					// calculate "lower" side of inner bounds ...
+					innerBounds.setMinlat(sessionBounds.getMinlat().max(innerBounds.getMinlat()));
+					// calculate "left" side of outer bounds ...
+					outerBounds.setMinlon(sessionBounds.getMinlon().min(outerBounds.getMinlon()));
+					// caluclate "right" side of outer bounds ...
+					outerBounds.setMaxlon(sessionBounds.getMaxlon().max(outerBounds.getMaxlon()));
+					// calculate "top" side of outer bounds ...
+					outerBounds.setMaxlat(sessionBounds.getMaxlat().max(outerBounds.getMaxlat()));
+					// calculate "lower" side of outer bounds ...
+					outerBounds.setMinlat(sessionBounds.getMinlat().min(outerBounds.getMinlat()));
+				}
+			}
+			// Store inner and outer bounds in sport session
+			session.setInnerBound(innerBounds);
+			session.setOuterBound(outerBounds);
+		}
+	}
+
+	private void addOverlapSessions(List<SportSession> normalizedOverlapSessions, SportSession overlapSession) {
+		if( overlapSession.getOverlapSessions() != null ) {
+			for (SportSession innerOverlapSession : overlapSession.getOverlapSessions()) {
+				if( (innerOverlapSession != null) && (normalizedOverlapSessions != null) && (!normalizedOverlapSessions.contains(innerOverlapSession)) ) {
+					normalizedOverlapSessions.add(innerOverlapSession);
+					addOverlapSessions(normalizedOverlapSessions, innerOverlapSession);
+				}
+			}
+		}
+	}
+
+	// Loop through all sport session and search for "adjuncted" sessions
+	public void doCompound(List<SportSession> sessions) {
+		doOverlap(sessions);
+
+		for (SportSession session : sessions) {
+			if (session.getGpx() != null && session.getGpx().getMetadata() != null && session.getGpx().getMetadata().getBounds() != null) {
+				List<SportSession> compoundSessions = new ArrayList<>();
+				for (SportSession session2 : sessions) {
+					if (!session.getId().equals(session2.getId())) {
+						if( (session.getOverlapSessions()!=null) && (!session.getOverlapSessions().contains(session2))) {
+							// process session only if it isn't an "overlapping" session
+							if(isCompound(session,session2))
+							{
+								// compound sport session found
+								compoundSessions.add(session2);
+							}
+						}
+					}
+				}
+				if( compoundSessions.size() > 0 ) {
+					session.setCompoundSessions(compoundSessions);
+				}
+			}
+		}
+	}
+
+	public boolean isCompound(SportSession session, SportSession session2) {
+		if ((session2.getGpx() != null && session2.getGpx().getMetadata() != null && session2.getGpx().getMetadata().getBounds() != null)) {
+			BoundsType bounds = session.getGpx().getMetadata().getBounds();
+			BoundsType bounds2 = session2.getGpx().getMetadata().getBounds();
+			BigDecimal diffTop = bounds.getMaxlat().subtract(bounds2.getMinlat()).abs();
+			BigDecimal diffRight = bounds.getMaxlon().subtract(bounds2.getMinlon()).abs();
+			BigDecimal diffDown = bounds.getMinlat().subtract(bounds2.getMaxlat()).abs();
+			BigDecimal diffLeft = bounds.getMinlon().subtract(bounds2.getMaxlon()).abs();
+			if (((diffTop.compareTo(diff)  < 0) && (bounds.getMinlon().compareTo(bounds2.getMaxlon())<=0) && (bounds.getMaxlon().compareTo(bounds2.getMinlon())>=0)) 
+			||  ((diffRight.compareTo(diff)< 0) && (bounds.getMinlat().compareTo(bounds2.getMaxlat())<=0) && (bounds.getMaxlat().compareTo(bounds2.getMinlat())>=0)) 
+			||  ((diffDown.compareTo(diff) < 0) && (bounds.getMinlon().compareTo(bounds2.getMaxlon())<=0) && (bounds.getMaxlon().compareTo(bounds2.getMinlon())>=0)) 
+			||  ((diffLeft.compareTo(diff) < 0) && (bounds.getMinlat().compareTo(bounds2.getMaxlat())<=0) && (bounds.getMaxlat().compareTo(bounds2.getMinlat())>=0)) ) {
+				// compound sport session found
+				return true;
+			}
+		}
+		return false;
 	}
 
 

@@ -69,13 +69,16 @@ public class SportSession implements Comparable<SportSession> {
 	private List<HeartRateData> heartRateData;
 
 	@JsonIgnore
-	private SportSessionAlbums SessionAlbum;
+	private SportSessionAlbums sessionAlbum;
 
 	@JsonIgnore
 	private List<ImagesMetaData> images;
 
 	@JsonIgnore
 	private List<SportSession> overlapSessions;
+
+	@JsonIgnore
+	private List<SportSession> compoundSessions;
 
 	@JsonIgnore
 	private BoundsType innerBound;

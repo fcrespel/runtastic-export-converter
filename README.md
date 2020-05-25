@@ -44,7 +44,7 @@ To list sport sessions from an export directory (here, `runtastic-export-2019080
 
     java -jar runtastic-export-converter-jar-with-dependencies.jar list runtastic-export-20190807-000
 
-To list sport sessions from an export directory, for a "specific" filter, add the filter (keyword) as 3rd option. The tool searches within session description, session id, photo id, photo description and equipment id for the filter (keword). Here an example seraching for 'Marathon':
+To list sport sessions from an export directory, for a "specific" filter, add the filter (keyword) as 3rd option. The tool searches within session description, session id, photo id, photo description and equipment id for the filter (keyword). Here an example searching for 'Marathon':
 
     java -jar runtastic-export-converter-jar-with-dependencies.jar list runtastic-export-20190807-000 Marathon
 
@@ -83,7 +83,7 @@ To calculate overlapping sport sessions and export them:
     java -jar runtastic-export-converter-jar-with-dependencies.jar overlap runtastic-export-20190807-000 runtastic-export-gpx gpx
 
 The command above analyzes all sport sessions and searches for 'overlapping' sport sessions bounds on the bounds of each sport session.
-It further exports them into destniation path. The exported sport session contains all overlapping sport sessions. 
+It further exports them into destination path. The exported sport session contains all overlapping sport sessions. 
 
 
 ## License

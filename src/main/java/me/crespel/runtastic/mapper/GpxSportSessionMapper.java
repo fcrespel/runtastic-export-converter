@@ -73,13 +73,18 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 
 		mapOverlapSessions(session, gpx);
 
+		mapCompoundSessions(session, gpx);
+
+		// store gpx data in session
+		session.setGpx(gpx);
+
 		return gpx;
 	}
 
 	private void mapMetadata(SportSession session, GpxType gpx) {
 		MetadataType meta = factory.createMetadataType();
 		meta.setTime(mapDate(session.getCreatedAt()));
-		meta.setDesc(session.getNotes());
+		meta.setDesc(session.getNotes() + " (ID:" + session.getId()+")");
 		if (session.getUser() != null) {
 			PersonType author = factory.createPersonType();
 			EmailType email = factory.createEmailType();
@@ -142,7 +147,7 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 
 	private void mapBoundsdata(SportSession session, GpxType gpx) {
 		// Calculate bounds and set them in meta data
-		gpx.getMetadata().setBounds(calculateBounds(gpx));
+		gpx.getMetadata().setBounds(calculateBounds(gpx,false));
 
 		// Add bounds as waypoints
 		gpx.getWpt().addAll(getBoundsAsWpt(gpx.getMetadata().getBounds(),"Session bounds"));
@@ -189,6 +194,37 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 			}			
 		}
 	}
+
+	private void mapCompoundSessions(SportSession session, GpxType gpx) {
+		if( session.getCompoundSessions() != null) {
+			Integer compoundSessionCount=0;
+			for( SportSession compoundSession : session.getCompoundSessions()) {
+				compoundSessionCount+=1;
+
+				if (compoundSession.getImages() != null) {
+					// Add the photos as "way points"
+					for (ImagesMetaData image : compoundSession.getImages()) {
+						WptType wpt = factory.createWptType();
+						wpt.setLat(image.getLatitude());
+						wpt.setLon(image.getLongitude());
+						wpt.setName("Compound Session " + compoundSessionCount + ": " + "Photo: " + image.getId() + ".jpg");
+						wpt.setDesc("Compound Session " + compoundSessionCount + ": " + image.getDescription());
+						wpt.setType("photo");
+						wpt.setTime(mapDate(image.getCreatedAt()));
+						gpx.getWpt().add(wpt);
+					}
+				}
+
+				TrkType trk = factory.createTrkType();
+				trk.setName("Compound Session " + compoundSessionCount + ": " + compoundSession.getId());
+				trk.setDesc("Compound Session " + compoundSessionCount + ": " + compoundSession.getNotes());
+				trk.setType(mapSport(compoundSession.getSportTypeId()));
+				trk.getTrkseg().addAll(compoundSession.getGpx().getTrk().get(0).getTrkseg());
+				gpx.getTrk().add(trk);
+			}
+		}
+	}
+
 
 	@Override
 	public GpxType mapSportSession(SportSession session, String format, File dest) {
@@ -246,22 +282,24 @@ public class GpxSportSessionMapper implements SportSessionMapper<GpxType> {
 		}
 	}
 
-	protected BoundsType calculateBounds( GpxType gpx ) {
+	protected BoundsType calculateBounds( GpxType gpx, boolean considerPhotos ) {
 		BoundsType bounds = factory.createBoundsType();
 
 		// search through waypoints (=photos)
-		for( WptType wpt : gpx.getWpt() ) {
-			if( bounds.getMaxlat() == null || (bounds.getMaxlat().compareTo(wpt.getLat()) == -1)) {
-					bounds.setMaxlat(wpt.getLat());
-			}
-			if( bounds.getMinlat() == null || (bounds.getMinlat().compareTo(wpt.getLat()) == 1)) {
-				bounds.setMinlat(wpt.getLat());
-			}
-			if( bounds.getMaxlon() == null || (bounds.getMaxlon().compareTo(wpt.getLon()) == -1)) {
-				bounds.setMaxlon(wpt.getLon());
-			}
-			if( bounds.getMinlon() == null || (bounds.getMinlon().compareTo(wpt.getLon()) == 1)) {
-				bounds.setMinlon(wpt.getLon());
+		if( considerPhotos ) {
+			for( WptType wpt : gpx.getWpt() ) {
+				if( bounds.getMaxlat() == null || (bounds.getMaxlat().compareTo(wpt.getLat()) == -1)) {
+						bounds.setMaxlat(wpt.getLat());
+				}
+				if( bounds.getMinlat() == null || (bounds.getMinlat().compareTo(wpt.getLat()) == 1)) {
+					bounds.setMinlat(wpt.getLat());
+				}
+				if( bounds.getMaxlon() == null || (bounds.getMaxlon().compareTo(wpt.getLon()) == -1)) {
+					bounds.setMaxlon(wpt.getLon());
+				}
+				if( bounds.getMinlon() == null || (bounds.getMinlon().compareTo(wpt.getLon()) == 1)) {
+					bounds.setMinlon(wpt.getLon());
+				}
 			}
 		}
 

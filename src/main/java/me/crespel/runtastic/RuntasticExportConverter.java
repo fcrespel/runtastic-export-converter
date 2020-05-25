@@ -3,10 +3,8 @@ package me.crespel.runtastic;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.topografix.gpx._1._1.BoundsType;
@@ -23,8 +21,6 @@ import me.crespel.runtastic.model.User;
  * @author Christian IMFELD (imfeldc@gmail.com)
  */
 public class RuntasticExportConverter {
-
-	private BigDecimal diff = new BigDecimal(0.0005); // max. allowed "deviation" between bounds of sessions
 
 	protected final ExportConverter converter = new ExportConverter();
 
@@ -84,6 +80,12 @@ public class RuntasticExportConverter {
 				}
 				doOverlap(new File(args[1]), args.length > 2 ? new File(args[2]) : null, args.length > 3 ? args[3] : "gpx");
 				break;
+			case "compound":
+				if (args.length < 2) {
+					throw new IllegalArgumentException("Missing argument for action 'compound'");
+				}
+				doCompound(new File(args[1]), args.length > 2 ? new File(args[2]) : null, args.length > 3 ? args[3] : "gpx");
+				break;
 			case "help":
 			default:
 				printUsage();
@@ -93,13 +95,14 @@ public class RuntasticExportConverter {
 
 	protected void printUsage() {
 		System.out.println("Expected arguments:");
-		System.out.println("  check   <export path>");
-		System.out.println("  list    <export path> <filter>");
-		System.out.println("  user    <export path>");
-		System.out.println("  info    <export path> <activity id>");
-		System.out.println("  photo   <export path> <photo id>");
-		System.out.println("  convert <export path> <activity id | 'all'> <destination path> ['gpx' | 'tcx']");
-		System.out.println("  overlap <export path> <destination path> ['gpx' | 'tcx']");
+		System.out.println("  check    <export path>");
+		System.out.println("  list     <export path> <filter>");
+		System.out.println("  user     <export path>");
+		System.out.println("  info     <export path> <activity id>");
+		System.out.println("  photo    <export path> <photo id>");
+		System.out.println("  convert  <export path> <activity id | 'all'> <destination path> ['gpx' | 'tcx']");
+		System.out.println("  overlap  <export path> <destination path> ['gpx' | 'tcx']");
+		System.out.println("  compound <export path> <destination path> ['gpx' | 'tcx']");
 		System.out.println("  help");
 	}
 
@@ -132,8 +135,8 @@ public class RuntasticExportConverter {
 		}
 
 		// Calculate overlapping sessions
-		doOverlap(fullsessions);
-		displayOverlapSummary(fullsessions, false);
+		converter.doOverlap(fullsessions);
+		displaySummary(fullsessions, false);
 
 		System.out.println("Session statistics ...");
 		System.out.println("      " + fullsessions.size() + " Sport Sessions found.");
@@ -229,13 +232,15 @@ public class RuntasticExportConverter {
 		long startTime = System.currentTimeMillis();
 		System.out.println("Load full list of sport session (inclusive all sub-data), this requires some time ...");
 		List<SportSession> sessions = converter.convertSportSessions(path, format);
-		doOverlap(sessions);
-		displayOverlapSummary(sessions, false);
+		converter.doOverlap(sessions);
+		displaySummary(sessions, false);
 
-		for( SportSession session : sessions) {
-			List<SportSession> overlapsessions = session.getOverlapSessions();
-			if( (dest!=null) && (overlapsessions!=null) && (overlapsessions.size() > 0) ) {
-				converter.exportSportSession(session, dest, format);
+		if(dest!=null) {
+			for( SportSession session : sessions) {
+				List<SportSession> overlapSessions = session.getOverlapSessions();
+				if((overlapSessions!=null) && (overlapSessions.size() > 0)) {
+					converter.exportSportSession(session, dest, format);
+				}
 			}
 		}
 
@@ -243,117 +248,36 @@ public class RuntasticExportConverter {
 		System.out.println(sessions.size() + " activities successfully processed, in " + (endTime - startTime) / 1000 + " seconds");
 	}
 
-	// Loop through all sport session and add "overlapping" session to each sport session
-	private void doOverlap(List<SportSession> sessions) {
-		// (1) search per session for all overlapping sessions
-		// NOTE: This can result in different results; e.g.
-		// - Session A, overlaps with B and C, but
-		// - Session D, overlaps only with B and C (this because B & C are in range of D, but not of A)
-		// but expected is that all mention sessions above are calculated as "overlapping"
-		// This circumstance will be "normalized" in a second step.
-		for (SportSession session : sessions) {
-			if (session.getGpx() != null && session.getGpx().getMetadata() != null
-					&& session.getGpx().getMetadata().getBounds() != null) {
-				List<SportSession> overlapSessions = new ArrayList<>();
-				for (SportSession session2 : sessions) {
-					if (!session.getId().equals(session2.getId())) {
-						if ((session2.getGpx() != null && session2.getGpx().getMetadata() != null
-								&& session2.getGpx().getMetadata().getBounds() != null)) {
-							BoundsType bounds = session.getGpx().getMetadata().getBounds();
-							BoundsType bounds2 = session2.getGpx().getMetadata().getBounds();
-							BigDecimal diffMaxlat = bounds.getMaxlat().subtract(bounds2.getMaxlat()).abs();
-							BigDecimal diffMaxlon = bounds.getMaxlon().subtract(bounds2.getMaxlon()).abs();
-							BigDecimal diffMinlat = bounds.getMinlat().subtract(bounds2.getMinlat()).abs();
-							BigDecimal diffMinlon = bounds.getMinlon().subtract(bounds2.getMinlon()).abs();
-							if ((diffMaxlat.compareTo(diff) < 0) && (diffMaxlon.compareTo(diff) < 0)
-									&& (diffMinlat.compareTo(diff) < 0) && (diffMinlon.compareTo(diff) < 0)) {
-								// overlapping sport session found
-								overlapSessions.add(session2);
-							}
-						}
-					}
+	private void doCompound(File path, File dest, String format) throws FileNotFoundException, IOException {
+		long startTime = System.currentTimeMillis();
+		System.out.println("Load full list of sport session (inclusive all sub-data), this requires some time ...");
+		List<SportSession> sessions = converter.convertSportSessions(path, format);
+		converter.doCompound(sessions);
+		displaySummary(sessions, false);
+
+		if(dest!=null){
+			for( SportSession session : sessions) {
+				List<SportSession> compoundSessions = session.getCompoundSessions();
+				if((compoundSessions!=null) && (compoundSessions.size() > 0)) {
+					converter.exportSportSession(session, dest, format);
 				}
-				session.setOverlapSessions(overlapSessions);
 			}
 		}
-		// (2) Normalize overlapping sport sessions
-		for (SportSession session : sessions) {
-			if( session.getOverlapSessions() != null ) {
-				List<SportSession> normalizedOverlapSessions = new ArrayList<>();
-				for (SportSession overlapSession : session.getOverlapSessions()) {
-					addOverlapSessions(normalizedOverlapSessions, overlapSession);
-				}
-				session.setOverlapSessions(normalizedOverlapSessions);
-			}
-		}
-		// (3) Calculate inner and outer bound (of normalized overlapping sessions)
-		for (SportSession session : sessions) {
-			calculateInnerAndOuterBound(session);
-		}
+
+		long endTime = System.currentTimeMillis();
+		System.out.println(sessions.size() + " activities successfully processed, in " + (endTime - startTime) / 1000 + " seconds");
 	}
 
-	public void calculateInnerAndOuterBound(SportSession session) {
-		if( session.getOverlapSessions() != null ) {
-			BoundsType innerBounds = null;
-			BoundsType outerBounds = null;
-			for (SportSession overlapSession : session.getOverlapSessions()) {
-				BoundsType sessionBounds = overlapSession.getGpx().getMetadata().getBounds();;
-				if( (innerBounds == null) && (outerBounds == null) ) {
-					// init bounds with "any" existing bounds from sessions
-					innerBounds = new BoundsType();
-					innerBounds.setMaxlat(sessionBounds.getMaxlat());
-					innerBounds.setMinlat(sessionBounds.getMinlat());
-					innerBounds.setMaxlon(sessionBounds.getMaxlon());
-					innerBounds.setMinlon(sessionBounds.getMinlon());
-					outerBounds = new BoundsType();
-					outerBounds.setMaxlat(sessionBounds.getMaxlat());
-					outerBounds.setMinlat(sessionBounds.getMinlat());
-					outerBounds.setMaxlon(sessionBounds.getMaxlon());
-					outerBounds.setMinlon(sessionBounds.getMinlon());
-				} else {
-					// calculate "left" side of inner bounds ...
-					innerBounds.setMinlon(sessionBounds.getMinlon().max(innerBounds.getMinlon()));
-					// calculate "right" side of inner bounds ...
-					innerBounds.setMaxlon(sessionBounds.getMaxlon().min(innerBounds.getMaxlon()));
-					// caluclate "top" side of inner bounds ...
-					innerBounds.setMaxlat(sessionBounds.getMaxlat().min(innerBounds.getMaxlat()));
-					// calculate "lower" side of inner bounds ...
-					innerBounds.setMinlat(sessionBounds.getMinlat().max(innerBounds.getMinlat()));
-					// calculate "left" side of outer bounds ...
-					outerBounds.setMinlon(sessionBounds.getMinlon().min(outerBounds.getMinlon()));
-					// caluclate "right" side of outer bounds ...
-					outerBounds.setMaxlon(sessionBounds.getMaxlon().max(outerBounds.getMaxlon()));
-					// calculate "top" side of outer bounds ...
-					outerBounds.setMaxlat(sessionBounds.getMaxlat().max(outerBounds.getMaxlat()));
-					// calculate "lower" side of outer bounds ...
-					outerBounds.setMinlat(sessionBounds.getMinlat().min(outerBounds.getMinlat()));
-				}
-			}
-			// Store inner and outer bounds in sport session
-			session.setInnerBound(innerBounds);
-			session.setOuterBound(outerBounds);
-		}
-	}
 
-	private void addOverlapSessions(List<SportSession> normalizedOverlapSessions, SportSession overlapSession) {
-		if( overlapSession.getOverlapSessions() != null ) {
-			for (SportSession innerOverlapSession : overlapSession.getOverlapSessions()) {
-				if( (innerOverlapSession != null) && (normalizedOverlapSessions != null) && (!normalizedOverlapSessions.contains(innerOverlapSession)) ) {
-					normalizedOverlapSessions.add(innerOverlapSession);
-					addOverlapSessions(normalizedOverlapSessions, innerOverlapSession);
-				}
-			}
-		}
-	}
-
-	// display summary of "overlapping" sport sessions
-	public void displayOverlapSummary(List<SportSession> sessions, boolean full) {
+	// display summary of sport sessions
+	public void displaySummary(List<SportSession> sessions, boolean full) {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		Integer singleSessions = 0;
-		Integer multiSessions = 0;
-		Integer totMultiSessions = 0;
+		Integer singleSessionCount = 0;
+		Integer multiSessionCount = 0;
+		Integer totMultiSessionCount = 0;
 		Integer minNumOverlapSessions = 99999;
 		Integer maxNumOverlapSessions = 0;
+		Integer compoundSessionCount = 0;
 
 		System.out.println("Sessions with 'empty' GPX track(s) ...");
 		Integer emptyGPXTrackSessionCount = 0;
@@ -385,25 +309,25 @@ public class RuntasticExportConverter {
 		for( SportSession session : sessions) {
 			List<SportSession> overlapsessions = session.getOverlapSessions();
 			if( (overlapsessions==null) || (overlapsessions.size() == 0) ) {
-				singleSessions+=1;
-				if( full ) System.out.println("      " + sdf.format(session.getStartTime())  + "["+singleSessions+"] - ID: " + session.getId() + ", Sport Type: " + session.getSportTypeId() + ", Notes: '" + session.getNotes() + "'");
+				singleSessionCount+=1;
+				if( full ) System.out.println("      " + sdf.format(session.getStartTime())  + "["+singleSessionCount+"] - ID: " + session.getId() + ", Sport Type: " + session.getSportTypeId() + ", Notes: '" + session.getNotes() + "'");
 			}
 		}
-		if (singleSessions == 0) {
+		if (singleSessionCount == 0) {
 			System.out.println("      none");
 		} else {
-			System.out.println("      " + singleSessions + " single sessions found." );
+			System.out.println("      " + singleSessionCount + " single sessions found." );
 		}
 
 		System.out.println("Multiple sport session found ..." );
 		for( SportSession session : sessions) {
 			List<SportSession> overlapsessions = session.getOverlapSessions();
 			if( (overlapsessions!=null) && (overlapsessions.size() > 0) ) {
-				multiSessions+=1;
-				totMultiSessions+=overlapsessions.size();
+				multiSessionCount+=1;
+				totMultiSessionCount+=overlapsessions.size();
 				minNumOverlapSessions = Integer.min(minNumOverlapSessions, overlapsessions.size());
 				maxNumOverlapSessions = Integer.max(maxNumOverlapSessions, overlapsessions.size());
-				if( full ) System.out.println("      " + sdf.format(session.getStartTime())  + "["+multiSessions+"] - ID: " + session.getId() + ", Sport Type: " + session.getSportTypeId() + ", Notes: '" + session.getNotes() + "'");
+				if( full ) System.out.println("      " + sdf.format(session.getStartTime())  + "["+multiSessionCount+"] - ID: " + session.getId() + ", Sport Type: " + session.getSportTypeId() + ", Notes: '" + session.getNotes() + "'");
 				for( SportSession overlapsession : overlapsessions ) {
 					if( full ) System.out.println("            " + sdf.format(overlapsession.getStartTime()) + " - ID: " + overlapsession.getId() + ", Sport Type: " + overlapsession.getSportTypeId() + ", Notes: '" + overlapsession.getNotes() + "'");
 					if( overlapsessions.size() != overlapsession.getOverlapSessions().size() ) {
@@ -448,13 +372,39 @@ public class RuntasticExportConverter {
 				}
 			}
 		}
-		if (multiSessions == 0) {
+		if (multiSessionCount == 0) {
 			System.out.println("      none");
 		} else {
-			System.out.println("      " + multiSessions  + " multi sesions found.  Minimum " + minNumOverlapSessions + " and maximum " + maxNumOverlapSessions + " number of overlapping sessions.");
+			System.out.println("      " + multiSessionCount  + " multi sesions found.  Minimum " + minNumOverlapSessions + " and maximum " + maxNumOverlapSessions + " number of overlapping sessions.");
 		}
 
-		System.out.println(sessions.size() + " activities successfully processed with max. deviation of " + distance(0, 0, 0, diff.doubleValue(), "K") + " km.");
+		System.out.println("Compound sport session found ..." );
+		for( SportSession session : sessions) {
+			List<SportSession> compoundSessions = session.getCompoundSessions();
+			if( (compoundSessions!=null) && (compoundSessions.size() > 0) ) {
+				compoundSessionCount+=1;
+				System.out.println("      " + sdf.format(session.getStartTime())  + "["+compoundSessionCount+"] - ID: " + session.getId() + ", Sport Type: " + session.getSportTypeId() + ", Notes: '" + session.getNotes() 
+				+ "', Bounds[MinLat="+session.getGpx().getMetadata().getBounds().getMinlat()
+				+ ", MaxLat="+session.getGpx().getMetadata().getBounds().getMaxlat()
+				+ ", MinLon="+session.getGpx().getMetadata().getBounds().getMinlon()
+				+ ", MaxLon="+session.getGpx().getMetadata().getBounds().getMaxlon()+"]");
+			for( SportSession compoundSession : compoundSessions ) {
+					System.out.println("            ID: " + compoundSession.getId() + ", Sport Type: " + compoundSession.getSportTypeId() 
+					+ ", Notes: '" + compoundSession.getNotes() 
+					+ "', Bounds[MinLat="+compoundSession.getGpx().getMetadata().getBounds().getMinlat()
+					+ ", MaxLat="+compoundSession.getGpx().getMetadata().getBounds().getMaxlat()
+					+ ", MinLon="+compoundSession.getGpx().getMetadata().getBounds().getMinlon()
+					+ ", MaxLon="+compoundSession.getGpx().getMetadata().getBounds().getMaxlon()+"]");
+				}
+			}
+		}
+		if (compoundSessionCount == 0) {
+			System.out.println("      none");
+		} else {
+			System.out.println("      " + compoundSessionCount + " compound sessions found." );
+		}
+
+		System.out.println(sessions.size() + " activities successfully processed with max. deviation of " + distance(0, 0, 0, converter.diff.doubleValue(), "K") + " km.");
 	}
 
 
