@@ -194,6 +194,17 @@ public class ExportConverter {
 		}
 	}
 
+	private void addOverlapSessions(List<SportSession> normalizedOverlapSessions, SportSession overlapSession) {
+		if((normalizedOverlapSessions != null) && (overlapSession.getOverlapSessions() != null)) {
+			for (SportSession innerOverlapSession : overlapSession.getOverlapSessions()) {
+				if( (innerOverlapSession != null) && (!normalizedOverlapSessions.contains(innerOverlapSession)) ) {
+					normalizedOverlapSessions.add(innerOverlapSession);
+					addOverlapSessions(normalizedOverlapSessions, innerOverlapSession);
+				}
+			}
+		}
+	}
+
 	public void calculateInnerAndOuterBound(SportSession session) {
 		if( session.getOverlapSessions() != null ) {
 			BoundsType innerBounds = null;
@@ -237,27 +248,19 @@ public class ExportConverter {
 		}
 	}
 
-	private void addOverlapSessions(List<SportSession> normalizedOverlapSessions, SportSession overlapSession) {
-		if( overlapSession.getOverlapSessions() != null ) {
-			for (SportSession innerOverlapSession : overlapSession.getOverlapSessions()) {
-				if( (innerOverlapSession != null) && (normalizedOverlapSessions != null) && (!normalizedOverlapSessions.contains(innerOverlapSession)) ) {
-					normalizedOverlapSessions.add(innerOverlapSession);
-					addOverlapSessions(normalizedOverlapSessions, innerOverlapSession);
-				}
-			}
-		}
-	}
-
 	// Loop through all sport session and search for "adjuncted" sessions
 	public void doCompound(List<SportSession> sessions) {
+		// calculate overlapping sessions, as those are not considered as "compound" session
 		doOverlap(sessions);
 
+		// (1) search per session for all "adjuncted sessions
 		for (SportSession session : sessions) {
 			if (session.getGpx() != null && session.getGpx().getMetadata() != null && session.getGpx().getMetadata().getBounds() != null) {
 				List<SportSession> compoundSessions = new ArrayList<>();
 				for (SportSession session2 : sessions) {
 					if (!session.getId().equals(session2.getId())) {
-						if( (session.getOverlapSessions()!=null) && (!session.getOverlapSessions().contains(session2))) {
+						if( (session.getOverlapSessions()==null) ||
+						    ((session.getOverlapSessions()!=null) && (!session.getOverlapSessions().contains(session2))) ) {
 							// process session only if it isn't an "overlapping" session
 							if(isCompound(session,session2))
 							{
@@ -270,6 +273,16 @@ public class ExportConverter {
 				if( compoundSessions.size() > 0 ) {
 					session.setCompoundSessions(compoundSessions);
 				}
+			}
+		}
+		// (2) Normalize compound sport sessions (add all compound sessions to one "chain")
+		for (SportSession session : sessions) {
+			if( session.getCompoundSessions() != null ) {
+				List<SportSession> normalizedCompoundSessions = new ArrayList<>();
+				for (SportSession compoundSession : session.getCompoundSessions()) {
+					addCompoundSessions(normalizedCompoundSessions, compoundSession);
+				}
+				session.setCompoundSessions(normalizedCompoundSessions);
 			}
 		}
 	}
@@ -291,6 +304,17 @@ public class ExportConverter {
 			}
 		}
 		return false;
+	}
+
+	private void addCompoundSessions(List<SportSession> normalizedCompoundSessions, SportSession compoundSession) {
+		if((normalizedCompoundSessions != null) && (compoundSession.getCompoundSessions() != null)) {
+			for (SportSession innerCompoundSession : compoundSession.getCompoundSessions()) {
+				if( (innerCompoundSession != null) && (!normalizedCompoundSessions.contains(innerCompoundSession)) ) {
+					normalizedCompoundSessions.add(innerCompoundSession);
+					addCompoundSessions(normalizedCompoundSessions, innerCompoundSession);
+				}
+			}
+		}
 	}
 
 

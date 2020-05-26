@@ -598,54 +598,75 @@ public class TestExportConverter {
 
 
         // Session
+        SportSession session = createSportSession("1", new BigDecimal(47.19623947143555), new BigDecimal(8.561245918273926), 
+                                                       new BigDecimal(8.540229797363281), new BigDecimal(47.154605865478516));
+
+        // Compound session, Bounds[MinLat=47.19075012207031, MaxLat=47.20124053955078, MinLon=8.490988731384277, MaxLon=8.54030704498291]
+        SportSession session1 = createSportSession("2", new BigDecimal(47.20124053955078), new BigDecimal(8.54030704498291), 
+                                                        new BigDecimal(8.490988731384277), new BigDecimal(47.19075012207031));
+        assertTrue("(1) Not detected as compound sessions!", converter.isCompound(session, session1));
+
+        // Compound session, Bounds[MinLat=47.196255, MaxLat=47.26670455932617, MinLon=8.485222, MaxLon=8.577558517456055]
+        SportSession session2 = createSportSession("3", new BigDecimal(47.26670455932617), new BigDecimal(8.577558517456055), 
+                                                        new BigDecimal(8.485222), new BigDecimal(47.196255));
+        assertTrue("(2) Not detected as compound sessions!", converter.isCompound(session, session2));
+
+        // Compound session, Bounds[MinLat=47.141380310058594, MaxLat=47.154335021972656, MinLon=8.53863525390625, MaxLon=8.561858177185059]
+        SportSession session3 = createSportSession("4", new BigDecimal(47.154335021972656), new BigDecimal(8.561858177185059), 
+                                                        new BigDecimal(8.53863525390625), new BigDecimal(47.141380310058594));
+        assertTrue("(3) Not detected as compound sessions!", converter.isCompound(session, session3));
+    }
+
+
+    @Test
+    public void testDoCompound() throws Exception {
+        // 2017-05-09 17:48:11[141] - ID: 5911f98508cd1247485d41cd, Sport Type: 1, Notes: 'Zuger Trophy - Etappe Baar, lang', 
+        // --> Bounds[MinLat=47.154605865478516, MaxLat=47.19623947143555, MinLon=8.540229797363281, MaxLon=8.561245918273926]
+        // ID: 55c2424b7d8d351e9909fb2f, Sport Type: 3, Notes: 'null', Bounds[MinLat=47.19075012207031, MaxLat=47.20124053955078, MinLon=8.490988731384277, MaxLon=8.54030704498291]
+        // ID: 7bb2b147-35b9-4cc7-a707-5750bc5096cc, Sport Type: 1, Notes: 'null', Bounds[MinLat=47.196255, MaxLat=47.26670455932617, MinLon=8.485222, MaxLon=8.577558517456055]
+        // ID: 55de05107f280eea8e006ccb, Sport Type: 3, Notes: 'Zuger Trophy, Velo Zugerberh', Bounds[MinLat=47.141380310058594, MaxLat=47.154335021972656, MinLon=8.53863525390625, MaxLon=8.561858177185059]
+
+        List<SportSession> sessions = new ArrayList<>();
+        sessions.add(createSportSession("1", new BigDecimal(47.19623947143555), new BigDecimal(8.561245918273926), 
+                                             new BigDecimal(8.540229797363281), new BigDecimal(47.154605865478516)));
+
+        // Compound session, Bounds[MinLat=47.19075012207031, MaxLat=47.20124053955078, MinLon=8.490988731384277, MaxLon=8.54030704498291]
+        sessions.add(createSportSession("2", new BigDecimal(47.20124053955078), new BigDecimal(8.54030704498291), 
+                                             new BigDecimal(8.490988731384277), new BigDecimal(47.19075012207031)));
+
+        // Compound session, Bounds[MinLat=47.196255, MaxLat=47.26670455932617, MinLon=8.485222, MaxLon=8.577558517456055]
+        sessions.add(createSportSession("3", new BigDecimal(47.26670455932617), new BigDecimal(8.577558517456055), 
+                                             new BigDecimal(8.485222), new BigDecimal(47.196255)));
+
+        // Compound session, Bounds[MinLat=47.141380310058594, MaxLat=47.154335021972656, MinLon=8.53863525390625, MaxLon=8.561858177185059]
+        sessions.add(createSportSession("4", new BigDecimal(47.154335021972656), new BigDecimal(8.561858177185059), 
+                                             new BigDecimal(8.53863525390625), new BigDecimal(47.141380310058594)));
+
+        converter.doCompound(sessions);
+
+        assertEquals("Session-List size",4,sessions.size());
+        assertEquals("Compound Session-List(0) size",4,sessions.get(0).getCompoundSessions().size());
+        assertEquals("Compound Session-List(1) size",4,sessions.get(1).getCompoundSessions().size());
+        assertEquals("Compound Session-List(2) size",4,sessions.get(2).getCompoundSessions().size());
+        assertEquals("Compound Session-List(3) size",4,sessions.get(3).getCompoundSessions().size());
+
+    }
+
+
+    private SportSession createSportSession(String id, BigDecimal maxLat, BigDecimal maxLon, BigDecimal minLon, BigDecimal minLat)  {
         SportSession session = new SportSession();
         GpxType gpx = new GpxType();
         MetadataType meta = new MetadataType();
         BoundsType bound = new BoundsType();
-        bound.setMaxlat(new BigDecimal(47.19623947143555));
-        bound.setMaxlon(new BigDecimal(8.561245918273926));
-        bound.setMinlon(new BigDecimal(8.540229797363281));
-        bound.setMinlat(new BigDecimal(47.154605865478516));
+        session.setId(id);
+        bound.setMaxlat(maxLat);
+        bound.setMaxlon(maxLon);
+        bound.setMinlon(minLon);
+        bound.setMinlat(minLat);
         meta.setBounds(bound);
         gpx.setMetadata(meta);
         session.setGpx(gpx);
-
-        SportSession session1 = new SportSession();
-        GpxType gpx1 = new GpxType();
-        MetadataType meta1 = new MetadataType();
-        BoundsType bound1 = new BoundsType();
-
-        // Compound session, Bounds[MinLat=47.19075012207031, MaxLat=47.20124053955078, MinLon=8.490988731384277, MaxLon=8.54030704498291]
-        bound1.setMaxlat(new BigDecimal(47.20124053955078));
-        bound1.setMaxlon(new BigDecimal(8.54030704498291));
-        bound1.setMinlon(new BigDecimal(8.490988731384277));
-        bound1.setMinlat(new BigDecimal(47.19075012207031));
-        meta1.setBounds(bound1);
-        gpx1.setMetadata(meta1);
-        session1.setGpx(gpx1);
-        assertTrue("(1) Not detected as compound sessions!", converter.isCompound(session, session1));
-
-        // Compound session, Bounds[MinLat=47.196255, MaxLat=47.26670455932617, MinLon=8.485222, MaxLon=8.577558517456055]
-        bound1.setMaxlat(new BigDecimal(47.26670455932617));
-        bound1.setMaxlon(new BigDecimal(8.577558517456055));
-        bound1.setMinlon(new BigDecimal(8.485222));
-        bound1.setMinlat(new BigDecimal(47.196255));
-        meta1.setBounds(bound1);
-        gpx1.setMetadata(meta1);
-        session1.setGpx(gpx1);
-        assertTrue("(2) Not detected as compound sessions!", converter.isCompound(session, session1));
-
-        // Compound session, Bounds[MinLat=47.141380310058594, MaxLat=47.154335021972656, MinLon=8.53863525390625, MaxLon=8.561858177185059]
-        bound1.setMaxlat(new BigDecimal(47.154335021972656));
-        bound1.setMaxlon(new BigDecimal(8.561858177185059));
-        bound1.setMinlon(new BigDecimal(8.53863525390625));
-        bound1.setMinlat(new BigDecimal(47.141380310058594));
-        meta1.setBounds(bound1);
-        gpx1.setMetadata(meta1);
-        session1.setGpx(gpx1);
-        assertTrue("(3) Not detected as compound sessions!", converter.isCompound(session, session1));
+        return session;
     }
-
-
 
 }

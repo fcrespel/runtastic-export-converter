@@ -26,13 +26,14 @@ To run the command line tool, use the `jar-with-dependencies` JAR file in the `t
     java -jar runtastic-export-converter-jar-with-dependencies.jar
     
     Expected arguments:
-      check   <export path>
-      list    <export path> <filter>
-      user    <export path>
-      info    <export path> <activity id>
-      photo   <export path> <photo id>
-      convert <export path> <activity id | 'all'> <destination path> ['gpx' | 'tcx']
-      overlap <export path> <destination path> ['gpx' | 'tcx']
+      check    <export path>
+      list     <export path> <filter>
+      user     <export path>
+      info     <export path> <activity id>
+      photo    <export path> <photo id>
+      convert  <export path> <activity id | 'all'> <destination path> ['gpx' | 'tcx']
+      overlap  <export path> <activity id | 'all'> <destination path> ['gpx' | 'tcx']
+      compound <export path> <activity id | 'all'> <destination path> ['gpx' | 'tcx']
       help
 
 
@@ -71,19 +72,26 @@ To convert all sport sessions to GPX (here, in a `runtastic-export-gpx` director
     java -jar runtastic-export-converter-jar-with-dependencies.jar convert runtastic-export-20190807-000 all runtastic-export-gpx gpx
 
 
-To calculate overlapping sport sessions:
+To calculate overlapping sport sessions for all sessions:
 
     java -jar runtastic-export-converter-jar-with-dependencies.jar overlap runtastic-export-20190807-000 
 
-The command above analyzes all sport sessions and searches for 'overlapping' sport sessions bounds on the bounds of each sport session. 
+The command above analyzes all sport sessions and searches for 'overlapping' sport session bounds by comparing the bounds of each sport session. 
 
 
-To calculate overlapping sport sessions and export them:
+To calculate overlapping sport sessions for all sessions and export them:
 
     java -jar runtastic-export-converter-jar-with-dependencies.jar overlap runtastic-export-20190807-000 runtastic-export-gpx gpx
 
-The command above analyzes all sport sessions and searches for 'overlapping' sport sessions bounds on the bounds of each sport session.
+The command above analyzes all sport sessions and searches for 'overlapping' sport session bounds by comparing the bounds of each sport session.
 It further exports them into destination path. The exported sport session contains all overlapping sport sessions. 
+
+
+To calculate compound sport sessions for all sessions:
+
+    java -jar runtastic-export-converter-jar-with-dependencies.jar compound runtastic-export-20190807-000 
+
+The command above analyzes all sport sessions and searches for 'compound' sport sessions by comparing the bounds of each sport session. 
 
 
 ## License

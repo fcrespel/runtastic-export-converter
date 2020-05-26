@@ -10,6 +10,7 @@ import java.util.List;
 import com.topografix.gpx._1._1.BoundsType;
 
 import me.crespel.runtastic.converter.ExportConverter;
+import me.crespel.runtastic.mapper.SportSessionMapper;
 import me.crespel.runtastic.model.ImagesMetaData;
 import me.crespel.runtastic.model.SportSession;
 import me.crespel.runtastic.model.User;
@@ -75,16 +76,16 @@ public class RuntasticExportConverter {
 				doConvert(new File(args[1]), args[2], new File(args[3]), args.length > 4 ? args[4] : null);
 				break;
 			case "overlap":
-				if (args.length < 2) {
+				if (args.length < 3) {
 					throw new IllegalArgumentException("Missing argument for action 'overlap'");
 				}
-				doOverlap(new File(args[1]), args.length > 2 ? new File(args[2]) : null, args.length > 3 ? args[3] : "gpx");
+				doOverlap(new File(args[2]), args[1], args.length > 3 ? new File(args[3]) : null, args.length > 4 ? args[4] : "gpx");
 				break;
 			case "compound":
-				if (args.length < 2) {
+				if (args.length < 3) {
 					throw new IllegalArgumentException("Missing argument for action 'compound'");
 				}
-				doCompound(new File(args[1]), args.length > 2 ? new File(args[2]) : null, args.length > 3 ? args[3] : "gpx");
+				doCompound(new File(args[2]), args[1], args.length > 3 ? new File(args[3]) : null, args.length > 4 ? args[4] : "gpx");
 				break;
 			case "help":
 			default:
@@ -101,8 +102,8 @@ public class RuntasticExportConverter {
 		System.out.println("  info     <export path> <activity id>");
 		System.out.println("  photo    <export path> <photo id>");
 		System.out.println("  convert  <export path> <activity id | 'all'> <destination path> ['gpx' | 'tcx']");
-		System.out.println("  overlap  <export path> <destination path> ['gpx' | 'tcx']");
-		System.out.println("  compound <export path> <destination path> ['gpx' | 'tcx']");
+		System.out.println("  overlap  <export path> <activity id | 'all'> <destination path> ['gpx' | 'tcx']");
+		System.out.println("  compound <export path> <activity id | 'all'> <destination path> ['gpx' | 'tcx']");
 		System.out.println("  help");
 	}
 
@@ -228,7 +229,7 @@ public class RuntasticExportConverter {
 		}
 	}
 
-	private void doOverlap(File path, File dest, String format) throws FileNotFoundException, IOException {
+	private void doOverlap(File path, String id, File dest, String format) throws FileNotFoundException, IOException {
 		long startTime = System.currentTimeMillis();
 		System.out.println("Load full list of sport session (inclusive all sub-data), this requires some time ...");
 		List<SportSession> sessions = converter.convertSportSessions(path, format);
@@ -236,10 +237,13 @@ public class RuntasticExportConverter {
 		displaySummary(sessions, false);
 
 		if(dest!=null) {
+			System.out.println("Export '" + id + "' overlap sport session(s) ...");
 			for( SportSession session : sessions) {
 				List<SportSession> overlapSessions = session.getOverlapSessions();
 				if((overlapSessions!=null) && (overlapSessions.size() > 0)) {
-					converter.exportSportSession(session, dest, format);
+					if ("all".equalsIgnoreCase(id) || (id.equalsIgnoreCase(session.getId()))) {
+						converter.exportSportSession(session, dest, format);
+					}
 				}
 			}
 		}
@@ -248,7 +252,7 @@ public class RuntasticExportConverter {
 		System.out.println(sessions.size() + " activities successfully processed, in " + (endTime - startTime) / 1000 + " seconds");
 	}
 
-	private void doCompound(File path, File dest, String format) throws FileNotFoundException, IOException {
+	private void doCompound(File path, String id, File dest, String format) throws FileNotFoundException, IOException {
 		long startTime = System.currentTimeMillis();
 		System.out.println("Load full list of sport session (inclusive all sub-data), this requires some time ...");
 		List<SportSession> sessions = converter.convertSportSessions(path, format);
@@ -256,10 +260,13 @@ public class RuntasticExportConverter {
 		displaySummary(sessions, false);
 
 		if(dest!=null){
+			System.out.println("Export '" + id + "' compound sport session(S) ...");
 			for( SportSession session : sessions) {
 				List<SportSession> compoundSessions = session.getCompoundSessions();
 				if((compoundSessions!=null) && (compoundSessions.size() > 0)) {
-					converter.exportSportSession(session, dest, format);
+					if ("all".equalsIgnoreCase(id) || (id.equalsIgnoreCase(session.getId()))) {
+						converter.exportSportSession(session, dest, format);
+					}
 				}
 			}
 		}
@@ -383,12 +390,13 @@ public class RuntasticExportConverter {
 			List<SportSession> compoundSessions = session.getCompoundSessions();
 			if( (compoundSessions!=null) && (compoundSessions.size() > 0) ) {
 				compoundSessionCount+=1;
-				System.out.println("      " + sdf.format(session.getStartTime())  + "["+compoundSessionCount+"] - ID: " + session.getId() + ", Sport Type: " + session.getSportTypeId() + ", Notes: '" + session.getNotes() 
+				if( full ) System.out.println("      " + sdf.format(session.getStartTime())  + "["+compoundSessionCount+"] - ID: " + session.getId() + ", Sport Type: " + session.getSportTypeId() + ", Notes: '" + session.getNotes() 
 				+ "', Bounds[MinLat="+session.getGpx().getMetadata().getBounds().getMinlat()
 				+ ", MaxLat="+session.getGpx().getMetadata().getBounds().getMaxlat()
 				+ ", MinLon="+session.getGpx().getMetadata().getBounds().getMinlon()
 				+ ", MaxLon="+session.getGpx().getMetadata().getBounds().getMaxlon()+"]");
-			for( SportSession compoundSession : compoundSessions ) {
+			if( full ) {
+				for( SportSession compoundSession : compoundSessions ) {
 					System.out.println("            ID: " + compoundSession.getId() + ", Sport Type: " + compoundSession.getSportTypeId() 
 					+ ", Notes: '" + compoundSession.getNotes() 
 					+ "', Bounds[MinLat="+compoundSession.getGpx().getMetadata().getBounds().getMinlat()
@@ -397,6 +405,7 @@ public class RuntasticExportConverter {
 					+ ", MaxLon="+compoundSession.getGpx().getMetadata().getBounds().getMaxlon()+"]");
 				}
 			}
+		}
 		}
 		if (compoundSessionCount == 0) {
 			System.out.println("      none");
