@@ -13,7 +13,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<mainClass>me.crespel.runtastic.RuntasticExportConverter</mainClass>
 
-		<jackson.version>2.10.2</jackson.version>
+		<jackson.version>2.12.1</jackson.version>
 		<junit.version>4.12</junit.version>
 		<lombok.version>1.18.8</lombok.version>
 		<slf4j.version>1.7.28</slf4j.version>
